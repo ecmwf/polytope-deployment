@@ -1,0 +1,57 @@
+
+{{ if .Values.deployment.mongodb }}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb
+spec:
+  replicas: {{ .Values.deployment.mongodb.replicas }}
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+      - name: mongodb-pod
+        image: mongo:3.6
+        volumeMounts:
+        - name: pvc
+          mountPath: /data/db
+      volumes:
+       - name: pvc
+         persistentVolumeClaim:
+           claimName: mongodb-pv-claim
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.deployment.mongodb.host }}
+spec:
+  selector:
+    app: mongodb
+  ports:
+  - protocol: TCP
+    port: {{ .Values.deployment.mongodb.port }}
+    targetPort: {{ .Values.deployment.mongodb.port }}
+
+--- 
+
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+ name: mongodb-pv-claim
+spec:
+ accessModes:
+  - ReadWriteOnce
+ resources:
+  requests:
+   storage: 1Gi
+
+
+{{ end }}

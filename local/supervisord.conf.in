@@ -1,0 +1,74 @@
+[program:frontend]
+directory={{ config['deployment']['working_directory'] }}
+command = python3 -m polytope_server.frontend -f config.yaml
+autostart = false
+redirect_stderr = true
+
+[program:telemetry]
+directory={{ config['deployment']['working_directory'] }}
+command = python3 -m polytope_server.telemetry -f config.yaml
+autostart = false
+redirect_stderr = true
+
+[program:worker]
+directory={{ config['deployment']['working_directory'] }}
+command = python3 -m polytope_server.worker -f config.yaml
+autostart = false
+redirect_stderr = true
+
+[program:broker]
+directory={{ config['deployment']['working_directory'] }}
+command = python3 -m polytope_server.broker -f config.yaml
+autostart = false
+redirect_stderr = true
+
+[program:basic-object-store]
+directory={{ config['deployment']['working_directory'] }}
+command = python3 -m polytope_server.basic_object_store -f config.yaml
+autostart = false
+redirect_stderr = true
+
+{% if config['deployment']['mongodb']['deploy'] %}
+[program:mongodb]
+directory={{ config['deployment']['working_directory'] }}
+command = bash -c "mkdir -p {{ config['deployment']['mongodb']['dbpath'] }} && {{ config['deployment']['mongodb']['executable'] }} --dbpath={{ config['deployment']['mongodb']['dbpath'] }}"
+autostart = false
+killasgroup = true
+redirect_stderr = true
+{% endif %}
+
+[program:garbage-collector]
+directory = {{ config['deployment']['working_directory'] }}
+command =  python3 -m polytope_server.garbage-collector -f config.yaml
+autostart = false
+redirect_stderr = true
+
+{% if config['deployment']['rabbitmq']['deploy'] %}
+[program:rabbitmq]
+directory={{ config['deployment']['working_directory'] }}
+command = {{ config['deployment']['rabbitmq']['executable'] }}
+autostart = false
+killasgroup = true
+stopasgroup = true
+redirect_stderr = true
+{% endif %}
+
+[supervisord]
+logfile=/tmp/supervisord.log ; main log file; default $CWD/supervisord.log
+logfile_maxbytes=50MB        ; max main logfile bytes b4 rotation; default 50MB
+logfile_backups=10           ; # of main logfile backups; 0 means none, default 10
+loglevel=info                ; log level; default info; others: debug,warn,trace
+pidfile=/tmp/supervisord.pid ; supervisord pidfile; default supervisord.pid
+nodaemon=false               ; start in foreground if true; default false
+minfds=1024                  ; min. avail startup file descriptors; default 1024
+minprocs=200                 ; min. avail process descriptors;default 200
+childlogdir=workdir/logs
+
+[inet_http_server]
+port = localhost:9009
+
+[rpcinterface:supervisor]
+supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
+
+[supervisorctl]
+serverurl=http://localhost:9009 ; use a unix:// URL  for a unix socket

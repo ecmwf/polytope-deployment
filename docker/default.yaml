@@ -1,0 +1,93 @@
+##
+## Copyright 2022 European Centre for Medium-Range Weather Forecasts (ECMWF)
+##
+## Licensed under the Apache License, Version 2.0 (the "License");
+## you may not use this file except in compliance with the License.
+## You may obtain a copy of the License at
+##
+##     http://www.apache.org/licenses/LICENSE-2.0
+##
+## Unless required by applicable law or agreed to in writing, software
+## distributed under the License is distributed on an "AS IS" BASIS,
+## WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+## See the License for the specific language governing permissions and
+## limitations under the License.
+##
+## In applying this licence, ECMWF does not waive the privileges and immunities
+## granted to it by virtue of its status as an intergovernmental organisation nor
+## does it submit to any jurisdiction.
+##
+
+deployment:
+
+  build:
+    no_proxy:
+    proxy:
+    registry:
+    tag: $USER-latest
+    git_ssh_keys:
+        private: ~/.ssh/id_rsa
+        public: ~/.ssh/id_rsa.pub
+    install_fdb: true
+    install_mars: false
+    mars_repo: ""
+    mars_config_repo: 
+    mars_config_branch:
+    fdb_repo: "" 
+
+  #public_endpoint_dns_name:
+
+  polytope_proxy:
+
+  #efk_logstack: false
+  #log_path: /var/snap/microk8s/common/var/lib/docker/containers
+
+  frontend:
+    replicas: 10
+
+  telemetry:
+    replicas: 1
+
+  worker:
+    replicas: 20
+    mars_localport: 30305
+
+  broker:
+    replicas: 1
+
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    replicas: 1
+
+  mongodb:
+    host: mongodb
+    port: 27017
+    replicas: 1
+
+  minio:
+    host: staging
+    port: 9000
+    replicas: 1 
+
+  ingress:
+    port: 80
+    https_rewrite: false
+    #https:
+    #  private_key: ~/polytope_private_key.pem
+    #  cert_chain: ~/polytope_cert_chain.pem
+    replicas: 1
+
+  testrunner:
+    replicas: 0
+
+  redis:
+    host: redis
+    port: 6379
+    replicas: 0
+
+  polytope_staging:
+    host: stagingtwo
+    port: 9001
+    root_dir: /data
+    replicas: 0
