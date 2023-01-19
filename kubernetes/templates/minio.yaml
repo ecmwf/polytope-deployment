@@ -1,4 +1,4 @@
-{{ if .Values.deployment.minio }}
+{{ if and (.Values.deployment.minio) (gt .Values.deployment.minio.replicas 0.0) }}
 
 #########################################
 #         D E P L O Y M E N T
