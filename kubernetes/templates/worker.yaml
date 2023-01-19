@@ -66,6 +66,8 @@ spec:
             value: {{ .Values.deployment.polytope_proxy }}
           - name: MIR_CACHE_PATH
             value: /data/mir_cache
+          - name: MARS_READANY_BUFFER_SIZE
+            value: "1073741824"
         volumeMounts:
           - name: config-volume
             mountPath: /etc/polytope
