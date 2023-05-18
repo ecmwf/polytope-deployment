@@ -18,48 +18,73 @@
 ## does it submit to any jurisdiction.
 ##
 
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: polytope-ingress-master
+  annotations:
+    dns.operators.ecmwf.int/on-transport-server: vs-transport-https
+    cert-manager.io/cluster-issuer: ov-issuer
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/limit-rps: "50"
+    nginx.ingress.kubernetes.io/limit-req-status-code: "429"
+    nginx.org/mergeable-ingress-type: master
+    kubernetes.io/ingress.class: nginx
+    {{ if .Values.deployment.ingress.https_rewrite }}
+    nginx.org/redirect-to-https: "True"
+    ingress.kubernetes.io/ssl-redirect: "True"
+    {{ else }}
+    nginx.org/redirect-to-https: "False"
+    ingress.kubernetes.io/ssl-redirect: "False"
+    {{ end }}
+spec:
+  rules:
+  - host: {{ .Values.deployment.public_endpoint_dns_name }}
+  tls:
+  - hosts:
+    - {{ .Values.deployment.public_endpoint_dns_name }}
+    secretName: polytope-tls-3
+
+---
+
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: polytope-ingress
   annotations:
-    kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/proxy-body-size: "100m"
     nginx.ingress.kubernetes.io/limit-rps: "50"
     nginx.ingress.kubernetes.io/limit-req-status-code: "429"
-    # this correctly re-writes the "location" header response from Polytope to be https
-    {{ if .Values.deployment.ingress.https_rewrite }}
-    nginx.ingress.kubernetes.io/proxy-redirect-from: ~^http(.*)
-    nginx.ingress.kubernetes.io/proxy-redirect-to: https$1
-    {{ end }}
+    nginx.org/mergeable-ingress-type: minion
+    kubernetes.io/ingress.class: nginx
 spec:
   rules:
   - host: {{ .Values.deployment.public_endpoint_dns_name }}
     http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-            serviceName: frontend
-            servicePort: 32002
+          service:
+            name: frontend
+            port:
+              number: 32002
 
 ---
 
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: polytope-ingress-downloads
   annotations:
-    kubernetes.io/ingress.class: nginx
+    # dns.operators.ecmwf.int/on-transport-server: vs-transport-https
     nginx.ingress.kubernetes.io/proxy-body-size: "100m"
     nginx.ingress.kubernetes.io/limit-rps: "50"
     nginx.ingress.kubernetes.io/limit-req-status-code: "429"
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
-    {{ if .Values.deployment.ingress.https_rewrite }}
-    nginx.ingress.kubernetes.io/proxy-redirect-from: ~^http(.*)
-    nginx.ingress.kubernetes.io/proxy-redirect-to: https$1
-    {{ end }}
-    
+    nginx.org/mergeable-ingress-type: minion
+    kubernetes.io/ingress.class: nginx
     # we need to force an auth header into the request if it doesn't exist, we can do this by telling nginx that /api/v1/test is an auth server (it always returns 200). we could authenticate the staging per user if we wanted to.
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
     nginx.ingress.kubernetes.io/auth-url: http://{{ .Values.frontend.host }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.frontend.port }}/api/v1/test
     nginx.ingress.kubernetes.io/auth-response-headers: Authorization
 
@@ -69,11 +94,19 @@ spec:
     http:
       paths:
       - path: /api/v1/downloads(/|$)(.*)
+        pathType: Prefix
         backend:
+          service:
             {{ if .Values.staging.polytope }}
-            serviceName: {{ .Values.staging.polytope.host }}
-            servicePort: {{ .Values.staging.polytope.port }}
+            name: {{ .Values.staging.polytope.host }}
+            port:
+              number: {{ .Values.staging.polytope.port }}
             {{ else }}
-            serviceName: {{ .Values.staging.s3.host }}
-            servicePort: {{ .Values.staging.s3.port }}
+            name: {{ .Values.staging.s3.host }}
+            port:
+              number: {{ .Values.staging.s3.port }}
             {{ end }}
+  # tls:
+  # - hosts:
+  #   - {{ .Values.deployment.public_endpoint_dns_name }}
+  #   secretName: polytope-tls

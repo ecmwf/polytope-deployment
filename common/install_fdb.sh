@@ -52,7 +52,7 @@ cd $root
 
 # Install eccodes 
 
-git clone -c advice.detachedHead=false --depth 1 --branch 2.21.0 https://github.com/ecmwf/eccodes.git ./source/eccodes
+git clone -c advice.detachedHead=false --depth 1 --branch 2.24.2 https://github.com/ecmwf/eccodes.git ./source/eccodes
 mkdir -p $root/build/eccodes
 cd $root/build/eccodes
 $ecbuild --prefix=/opt/fdb -DENABLE_FORTRAN=OFF -- -DCMAKE_PREFIX_PATH=/opt/fdb $root/source/eccodes

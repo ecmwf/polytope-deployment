@@ -152,5 +152,8 @@ ENV https_proxy=
 ENV HTTP_PROXY=
 ENV HTTPS_PROXY=
 
+RUN set -eux \
+    && mkdir /home/polytope/data
+
 # Remove itself from sudo group
 RUN sudo deluser polytope sudo
