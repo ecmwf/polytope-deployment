@@ -28,6 +28,8 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-body-size: "100m"
     nginx.ingress.kubernetes.io/limit-rps: "50"
     nginx.ingress.kubernetes.io/limit-req-status-code: "429"
+    nginx.org/proxy-buffering: "True"
+    nginx.org/proxy-max-temp-file-size: "1024000m"
     nginx.org/mergeable-ingress-type: master
     kubernetes.io/ingress.class: nginx
     {{ if .Values.deployment.ingress.https_rewrite }}
@@ -78,7 +80,7 @@ metadata:
   name: polytope-ingress-downloads
   annotations:
     # dns.operators.ecmwf.int/on-transport-server: vs-transport-https
-    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    # nginx.ingress.kubernetes.io/proxy-body-size: "100m"
     nginx.ingress.kubernetes.io/limit-rps: "50"
     nginx.ingress.kubernetes.io/limit-req-status-code: "429"
     nginx.org/proxy-buffering: False
