@@ -65,7 +65,7 @@ spec:
           - name: POLYTOPE_PROXY
             value: {{ .Values.deployment.polytope_proxy }}
           - name: MIR_CACHE_PATH
-            value: /data/mir_cache
+            value: /home/polytope/data/mir_cache
           - name: MARS_READANY_BUFFER_SIZE
             value: "1073741824"
           - name: MIR_GRIB_INPUT_BUFFER_SIZE
