@@ -83,7 +83,6 @@ metadata:
     # nginx.ingress.kubernetes.io/proxy-body-size: "100m"
     nginx.ingress.kubernetes.io/limit-rps: "50"
     nginx.ingress.kubernetes.io/limit-req-status-code: "429"
-    nginx.org/proxy-buffering: False
     nginx.org/mergeable-ingress-type: minion
     kubernetes.io/ingress.class: nginx
     # we need to force an auth header into the request if it doesn't exist, we can do this by telling nginx that /api/v1/test is an auth server (it always returns 200). we could authenticate the staging per user if we wanted to.
