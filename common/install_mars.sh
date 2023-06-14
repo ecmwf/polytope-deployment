@@ -31,4 +31,4 @@ echo "deb ${MARS_REPO}/private-debian-buster-stable/ buster main" >> /etc/apt/so
 apt-key add stable-public.gpg.key
 apt-get update
 apt install -y libnetcdf13 liblapack3
-apt install -y mars-client-cpp mars-client-cloud=0.2.1
+apt install -y mars-client-cpp
