@@ -28,10 +28,14 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-body-size: "100m"
     nginx.ingress.kubernetes.io/limit-rps: "50"
     nginx.ingress.kubernetes.io/limit-req-status-code: "429"
-    nginx.org/proxy-buffering: "True"
+    nginx.org/proxy-buffering: "False"
     nginx.org/proxy-max-temp-file-size: "1024000m"
     nginx.org/mergeable-ingress-type: master
     kubernetes.io/ingress.class: nginx
+    nginx.org/location-snippets: |
+      chunked_transfer_encoding off;
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      chunked_transfer_encoding off;
     {{ if .Values.deployment.ingress.https_rewrite }}
     nginx.org/redirect-to-https: "True"
     ingress.kubernetes.io/ssl-redirect: "True"
@@ -86,7 +90,8 @@ metadata:
     nginx.org/mergeable-ingress-type: minion
     kubernetes.io/ingress.class: nginx
     # we need to force an auth header into the request if it doesn't exist, we can do this by telling nginx that /api/v1/test is an auth server (it always returns 200). we could authenticate the staging per user if we wanted to.
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    # nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.org/rewrites: "serviceName={{ .Values.staging.s3.host }} rewrite=/"
     nginx.ingress.kubernetes.io/auth-url: http://{{ .Values.frontend.host }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.frontend.port }}/api/v1/test
     nginx.ingress.kubernetes.io/auth-response-headers: Authorization
 
@@ -95,7 +100,7 @@ spec:
   - host: {{ .Values.deployment.public_endpoint_dns_name }}
     http:
       paths:
-      - path: /api/v1/downloads(/|$)(.*)
+      - path: /api/v1/downloads/
         pathType: Prefix
         backend:
           service:
