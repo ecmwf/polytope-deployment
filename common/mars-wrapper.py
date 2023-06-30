@@ -63,10 +63,10 @@ def main():
     env = {
         **os.environ,
         "MARS_ENVIRON_ORIGIN": "polytope",
-        # "MARS_DHS_CALLBACK_HOST": node_name,
-        # "MARS_DHS_CALLBACK_PORT": str(node_port),
-        # "MARS_DHS_LOCALPORT": str(local_port),
-        # "MARS_DHS_LOCALHOST": pod_name,
+        "MARS_DHS_CALLBACK_HOST": node_name,
+        "MARS_DHS_CALLBACK_PORT": str(node_port),
+        "MARS_DHS_LOCALPORT": str(local_port),
+        "MARS_DHS_LOCALHOST": pod_name,
     }
 
     # Call MARS

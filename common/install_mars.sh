@@ -32,3 +32,4 @@ apt-key add stable-public.gpg.key
 apt-get update
 apt install -y libnetcdf13 liblapack3
 apt install -y mars-client-cpp=0.0.3.0
+apt install -y liblapack3 mars-client=6.32.1.0 mars-client-cloud=0.2.1
