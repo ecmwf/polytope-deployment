@@ -69,12 +69,6 @@ ARG mars_config_repo
 ARG mars_config_branch
 ARG fdb_repo
 
-# Set the proxy
-ENV http_proxy=$proxy
-ENV https_proxy=$proxy
-ENV HTTP_PROXY=$proxy
-ENV HTTPS_PROXY=$proxy
-
 RUN set -eux \
     && addgroup --system polytope --gid 474 \
     && adduser --system polytope --ingroup polytope \
@@ -151,6 +145,9 @@ ENV http_proxy=
 ENV https_proxy=
 ENV HTTP_PROXY=
 ENV HTTPS_PROXY=
+
+RUN set -eux \
+    && mkdir /home/polytope/data
 
 # Remove itself from sudo group
 RUN sudo deluser polytope sudo

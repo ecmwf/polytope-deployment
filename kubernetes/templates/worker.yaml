@@ -65,7 +65,11 @@ spec:
           - name: POLYTOPE_PROXY
             value: {{ .Values.deployment.polytope_proxy }}
           - name: MIR_CACHE_PATH
-            value: /data/mir_cache
+            value: /home/polytope/data/mir_cache
+          - name: MARS_READANY_BUFFER_SIZE
+            value: "1073741824"
+          - name: MIR_GRIB_INPUT_BUFFER_SIZE
+            value: "1073741824"
         volumeMounts:
           - name: config-volume
             mountPath: /etc/polytope
@@ -75,8 +79,8 @@ spec:
             mountPath: /logs/mars/statistics
           - name: tmp
             mountPath: /tmp
-          - name: fdb
-            mountPath: /data
+          # - name: fdb
+          #   mountPath: /data
           - name: worker-persistent
             mountPath: /persistent
         command: ["python"]
@@ -91,9 +95,9 @@ spec:
           emptyDir: {}
         - name: tmp
           emptyDir: {}
-        - name: fdb
-          persistentVolumeClaim:
-            claimName: worker-pv-claim
+        # - name: fdb
+        #   persistentVolumeClaim:
+        #     claimName: worker-pv-claim
       securityContext:
         fsGroup: 1500
       imagePullSecrets:
@@ -122,16 +126,16 @@ spec:
 
 ---
 
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
- name: worker-pv-claim
-spec:
- accessModes:
-  - ReadWriteOnce
- resources:
-  requests:
-   storage: 50Gi
+# kind: PersistentVolumeClaim
+# apiVersion: v1
+# metadata:
+#  name: worker-pv-claim
+# spec:
+#  accessModes:
+#   - ReadWriteOnce
+#  resources:
+#   requests:
+#    storage: 50Gi
 
 {{ range $i := until (.Values.deployment.worker.replicas | int) }}
 ---
