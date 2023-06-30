@@ -20,7 +20,6 @@
 ##
 
 
-
 # Installs MARS client from ECMWF repositories
 
 set -eux
@@ -31,4 +30,6 @@ curl -o stable-public.gpg.key "${MARS_REPO}/private-raw-repos-config/debian/bust
 echo "deb ${MARS_REPO}/private-debian-buster-stable/ buster main" >> /etc/apt/sources.list
 apt-key add stable-public.gpg.key
 apt-get update
-apt install -y liblapack3 mars-client=6.32.1.0 mars-client-cloud=0.2.1 libnetcdf13
+apt install -y libnetcdf13 liblapack3
+apt install -y mars-client-cpp=0.0.3.0
+apt install -y liblapack3 mars-client=6.32.1.0 mars-client-cloud=0.2.1
