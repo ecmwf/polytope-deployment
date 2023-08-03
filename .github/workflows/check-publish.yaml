@@ -102,6 +102,7 @@ jobs:
         run: |
           pip install hiyapyco pykwalify
           pip install -e ./polytope
+          pip install -e ./polytope-server
 
       - name: (TODO) Create kubeconfig
         run: |
