@@ -110,7 +110,7 @@ jobs:
 
       - name: Configure polytope
         run: |
-          configure.py -f ../../polytope-config/default.yaml -f ../../polytope-config/deployment/kubernetes/dev.yaml
+          ./configure.py -f ../../polytope-config/default.yaml -f ../../polytope-config/deployment/kubernetes/dev.yaml
         working-directory: ./polytope-deployment/kubernetes
 
       - name: Build
