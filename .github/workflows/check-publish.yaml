@@ -104,9 +104,9 @@ jobs:
           pip install -e ./polytope
           pip install -e ./polytope-server
 
-      - name: (TODO) Create kubeconfig
+      - name: Create kubeconfig
         run: |
-          echo "TODO" > kubeconfig.yml
+          echo "${{ secrets.DEV_POLYTOPE_KUBECONFIG }}" > kubeconfig.yml
         working-directory: ./polytope-deployment/kubernetes
 
       - name: Configure polytope
