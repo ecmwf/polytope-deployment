@@ -133,5 +133,5 @@ jobs:
             --type=kubernetes.io/dockerconfigjson 2>&1
 
       - name: Deploy
-        run: helm install polytope .
+        run: helm install polytope . --namespace polytope-ci
         working-directory: ./polytope-deployment/kubernetes
