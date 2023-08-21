@@ -114,10 +114,6 @@ jobs:
           ./configure.py -f ../../polytope-config/default.yaml -f ../../polytope-config/deployment/kubernetes/dev.yaml
         working-directory: ./polytope-deployment/kubernetes
 
-      - name: Build
-        run: skaffold build
-        working-directory: ./polytope-deployment/kubernetes
-
       - name: Login to Docker Hub
         if: github.event_name == 'push'
         uses: docker/login-action@v2
@@ -125,6 +121,10 @@ jobs:
           registry: eccr.ecmwf.int
           username: ${{ secrets.ECMWF_DOCKER_REGISTRY_USERNAME }}
           password: ${{ secrets.ECMWF_DOCKER_REGISTRY_ACCESS_TOKEN }}
+
+      - name: Build
+        run: skaffold build
+        working-directory: ./polytope-deployment/kubernetes
 
       - name: Configure docker registry credentials
         run: |
