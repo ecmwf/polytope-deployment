@@ -79,6 +79,7 @@ jobs:
         with:
           repository: ecmwf/polytope-server
           path: polytope-server
+          ref: develop
 
       - name: Checkout polytope-config repo
         uses: actions/checkout@v3
@@ -86,12 +87,14 @@ jobs:
           repository: ecmwf/polytope-config
           path: polytope-config
           token: ${{ secrets.GH_REPO_READ_TOKEN }}
+          ref: open-pyfdb
 
       - name: Checkout polytope repo
         uses: actions/checkout@v3
         with:
           repository: ecmwf/polytope
           path: polytope
+          ref: develop
 
       - name: Setup python
         uses: actions/setup-python@v4
