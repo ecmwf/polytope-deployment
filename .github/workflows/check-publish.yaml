@@ -115,7 +115,16 @@ jobs:
       - name: Configure polytope
         run: |
           ./configure.py -f ../../polytope-config/default.yaml -f ../../polytope-config/deployment/kubernetes/dev.yaml
+          ls -l
         working-directory: ./polytope-deployment/kubernetes
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: config
+          path: |
+            ./polytope-deployment/kubernetes/values.yaml
+            ./polytope-deployment/kubernetes/skaffold.yaml
 
       - name: Login to Docker Hub
         if: github.event_name == 'push'
