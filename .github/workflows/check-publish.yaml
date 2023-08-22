@@ -87,7 +87,7 @@ jobs:
           repository: ecmwf/polytope-config
           path: polytope-config
           token: ${{ secrets.GH_REPO_READ_TOKEN }}
-          ref: open-pyfdb
+          ref: open-pyfdb-master
 
       - name: Checkout polytope repo
         uses: actions/checkout@v3
