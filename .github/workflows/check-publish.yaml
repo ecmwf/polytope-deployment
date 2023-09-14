@@ -114,7 +114,7 @@ jobs:
 
       - name: Configure polytope
         run: |
-          ./configure.py -f ../../polytope-config/default.yaml -f ../../polytope-config/deployment/kubernetes/dev.yaml
+          ./configure.py -f ../../polytope-config/default.yaml -f ../../polytope-config/deployment/kubernetes/github-ci.yaml
           ls -l
         working-directory: ./polytope-deployment/kubernetes
 
