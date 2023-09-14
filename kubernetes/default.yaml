@@ -38,6 +38,8 @@ deployment:
   efk_logstack: false
   public_endpoint_dns_name: none
   worker_node: 
+  frontend_tls_secret: polytope-frontend-tls
+  downloads_tls_secret: polytope-downloads-tls
 
   # Leave blank to let Kubernetes choose a free port for you
   # use ./whereis.sh to see the assigned port

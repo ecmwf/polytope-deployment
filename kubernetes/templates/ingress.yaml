@@ -23,8 +23,8 @@ kind: Ingress
 metadata:
   name: polytope-ingress
   annotations:
-    dns.operators.ecmwf.int/on-transport-server: {{ .Values.deployment.cert-issuer }}
-    cert-manager.io/cluster-issuer: letsencrypt-nginx
+    # dns.operators.ecmwf.int/on-transport-server: vs-transport-https
+    cert-manager.io/cluster-issuer: {{ .Values.deployment.cert_issuer }}
     nginx.ingress.kubernetes.io/proxy-body-size: "100m"
     nginx.ingress.kubernetes.io/limit-rps: "50"
     nginx.ingress.kubernetes.io/limit-req-status-code: "429"
@@ -50,10 +50,15 @@ spec:
             name: frontend
             port:
               number: 32002
+  defaultBackend:
+    service:
+      name: frontend
+      port:
+        number: 32002
   tls:
   - hosts:
     - {{ .Values.deployment.public_endpoint_dns_name }}
-    secretName: polytope-tls-frontend
+    secretName: {{ .Values.deployment.frontend_tls_secret }}
 
 ---
 
@@ -63,8 +68,8 @@ metadata:
   name: polytope-ingress-downloads
   annotations:
 
-    dns.operators.ecmwf.int/on-transport-server: {{ .Values.deployment.cert-issuer }}
-    cert-manager.io/cluster-issuer: letsencrypt-nginx
+    # dns.operators.ecmwf.int/on-transport-server: vs-transport-https
+    cert-manager.io/cluster-issuer: {{ .Values.deployment.cert_issuer }}
     nginx.ingress.kubernetes.io/proxy-body-size: "100m"
     nginx.ingress.kubernetes.io/limit-rps: "50"
     nginx.ingress.kubernetes.io/limit-req-status-code: "429"
@@ -102,7 +107,18 @@ spec:
             port:
               number: {{ .Values.staging.s3.port }}
             {{ end }}
+  defaultBackend:
+    service:
+      {{ if .Values.staging.polytope }}
+      name: {{ .Values.staging.polytope.host }}
+      port:
+        number: {{ .Values.staging.polytope.port }}
+      {{ else }}
+      name: {{ .Values.staging.s3.host }}
+      port:
+        number: {{ .Values.staging.s3.port }}
+      {{ end }}
   tls:
   - hosts:
     - downloads.{{ .Values.deployment.public_endpoint_dns_name }}
-    secretName: polytope-tls-downloads
+    secretName: {{ .Values.deployment.downloads_tls_secret }}
