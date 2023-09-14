@@ -143,6 +143,7 @@ jobs:
           kubectl create secret generic polytope-registry-cred \
             --from-file=.dockerconfigjson=${HOME}/.docker/config.json \
             --type=kubernetes.io/dockerconfigjson 2>&1
+        working-directory: ./polytope-deployment/kubernetes
 
       - name: Deploy
         run: helm install polytope . --namespace polytope-ci
