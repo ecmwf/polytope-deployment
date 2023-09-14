@@ -16,7 +16,6 @@ build:
       secretName: polytope-registry-cred-opaque
   {% else %}
   local:
-    useDockerCLI: true
     useBuildkit: true
     concurrency: 1
   {% endif %}
@@ -45,8 +44,6 @@ build:
           value: "{{ build_no_proxy }}"
     {% else %}
     docker:
-      cliFlags:
-        - "--network=host"
     {% endif %}
       target: polytope-common
       dockerfile: polytope-deployment/common/Dockerfile
