@@ -147,5 +147,7 @@ jobs:
         working-directory: ./polytope-deployment/kubernetes
 
       - name: Deploy
-        run: helm install polytope . --namespace polytope-ci
+        run: |
+          export KUBECONFIG=./kubeconfig.yml
+          helm install polytope . --namespace polytope-ci
         working-directory: ./polytope-deployment/kubernetes
