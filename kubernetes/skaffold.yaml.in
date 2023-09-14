@@ -25,7 +25,7 @@ build:
       template: {{ build_tag }}
 
   artifacts:
-  
+
   # Polytope common
   - image: "{{ build_registry }}/polytope-common"
     context: ../../
@@ -49,6 +49,8 @@ build:
       dockerfile: polytope-deployment/common/Dockerfile
       buildArgs:
         proxy: "{{ build_proxy }}"
+      cliFlags:
+        - "--network=host"
 
 
   # Worker
