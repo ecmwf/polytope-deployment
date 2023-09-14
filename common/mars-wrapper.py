@@ -67,9 +67,9 @@ def main():
         "MARS_DHS_CALLBACK_PORT": str(node_port),
         "MARS_DHS_LOCALPORT": str(local_port),
         "MARS_DHS_LOCALHOST": pod_name,
-        "MARS_DEBUG" : str(1),
-        "ECKIT_DEBUG" : str(1),
-        "FDB_DEBUG" : str(1),
+        "MARS_DEBUG": str(1),
+        "ECKIT_DEBUG": str(1),
+        "FDB_DEBUG": str(1),
     }
 
     # Call MARS
