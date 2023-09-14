@@ -5,7 +5,7 @@
 
 # https://skaffold.dev/docs/references/yaml/
 
-apiVersion: skaffold/v2beta9
+apiVersion: skaffold/v2beta29
 kind: Config
 
 build:
