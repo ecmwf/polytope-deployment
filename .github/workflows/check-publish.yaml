@@ -140,7 +140,8 @@ jobs:
 
       - name: Configure docker registry credentials
         run: |
-          kubectl create secret generic polytope-registry-cred \
+          export KUBECONFIG=./kubeconfig.yml
+          kubectl --namespace polytope-ci create secret generic polytope-registry-cred \
             --from-file=.dockerconfigjson=${HOME}/.docker/config.json \
             --type=kubernetes.io/dockerconfigjson 2>&1
         working-directory: ./polytope-deployment/kubernetes
