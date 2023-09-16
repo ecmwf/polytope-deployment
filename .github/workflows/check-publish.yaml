@@ -18,7 +18,7 @@ jobs:
     name: Code QA
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: pip install black flake8 isort
       - run: black --version
       - run: isort --check .
@@ -27,7 +27,7 @@ jobs:
 
   docs:
     if: |
-      (github.event_name == 'push' && contains(github.ref, 'refs/tags/')) || 
+      (github.event_name == 'push' && contains(github.ref, 'refs/tags/')) ||
       github.ref == 'refs/heads/master'
     name: Build Readthedocs
     runs-on: ubuntu-latest
@@ -61,3 +61,94 @@ jobs:
                 workflow_id: 'publish.yaml',
                 ref: 'master'
             });
+
+  cd:
+    if: github.event_name == 'push'
+    name: Build and Deploy
+    needs: [quality]
+    runs-on: [self-hosted, web-builder]
+    steps:
+      - name: Checkout polytope-deployment repo
+        uses: actions/checkout@v3
+        with:
+          path: polytope-deployment
+
+      - name: Checkout polytope-server repo
+        uses: actions/checkout@v3
+        with:
+          repository: ecmwf/polytope-server
+          path: polytope-server
+          ref: develop
+
+      - name: Checkout polytope-config repo
+        uses: actions/checkout@v3
+        with:
+          repository: ecmwf/polytope-config
+          path: polytope-config
+          token: ${{ secrets.GH_REPO_READ_TOKEN }}
+          ref: open-pyfdb-master
+
+      - name: Checkout polytope repo
+        uses: actions/checkout@v3
+        with:
+          repository: ecmwf/polytope
+          path: polytope
+          ref: develop
+
+      - name: Setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.7"
+
+      - name: Install pip deps
+        run: |
+          pip install hiyapyco pykwalify
+          pip install -e ./polytope
+          pip install -e ./polytope-server
+
+      - name: Create kubeconfig
+        run: |
+          echo "${{ secrets.DEV_POLYTOPE_KUBECONFIG }}" > kubeconfig.yml
+        working-directory: ./polytope-deployment/kubernetes
+
+      - name: Configure polytope
+        run: |
+          ./configure.py -f ../../polytope-config/default.yaml -f ../../polytope-config/deployment/kubernetes/github-ci.yaml
+          ls -l
+        working-directory: ./polytope-deployment/kubernetes
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: config
+          path: |
+            ./polytope-deployment/kubernetes/values.yaml
+            ./polytope-deployment/kubernetes/skaffold.yaml
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          registry: eccr.ecmwf.int
+          username: ${{ secrets.ECMWF_DOCKER_REGISTRY_USERNAME }}
+          password: ${{ secrets.ECMWF_DOCKER_REGISTRY_ACCESS_TOKEN }}
+
+      - name: Build
+        run: skaffold build
+        working-directory: ./polytope-deployment/kubernetes
+
+      - name: Configure docker registry credentials
+        if: github.ref == 'refs/heads/develop'
+        run: |
+          export KUBECONFIG=./kubeconfig.yml
+          kubectl --namespace polytope-ci delete secret polytope-registry-cred --ignore-not-found
+          kubectl --namespace polytope-ci create secret generic polytope-registry-cred \
+            --from-file=.dockerconfigjson=${HOME}/.docker/config.json \
+            --type=kubernetes.io/dockerconfigjson 2>&1
+        working-directory: ./polytope-deployment/kubernetes
+
+      - name: Deploy
+        if: github.ref == 'refs/heads/develop'
+        run: |
+          export KUBECONFIG=./kubeconfig.yml
+          helm upgrade -i polytope . --namespace polytope-ci
+        working-directory: ./polytope-deployment/kubernetes
