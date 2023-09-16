@@ -63,9 +63,8 @@ jobs:
             });
 
   cd:
-    #if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
-    if: github.event_name == 'push' && github.ref == 'refs/heads/cd'
-    name: Deploy
+    if: github.event_name == 'push'
+    name: Build and Deploy
     needs: [quality]
     runs-on: [self-hosted, web-builder]
     steps:
@@ -127,7 +126,6 @@ jobs:
             ./polytope-deployment/kubernetes/skaffold.yaml
 
       - name: Login to Docker Hub
-        if: github.event_name == 'push'
         uses: docker/login-action@v2
         with:
           registry: eccr.ecmwf.int
@@ -139,6 +137,7 @@ jobs:
         working-directory: ./polytope-deployment/kubernetes
 
       - name: Configure docker registry credentials
+        if: github.ref == 'refs/heads/develop'
         run: |
           export KUBECONFIG=./kubeconfig.yml
           kubectl --namespace polytope-ci delete secret polytope-registry-cred --ignore-not-found
@@ -148,6 +147,7 @@ jobs:
         working-directory: ./polytope-deployment/kubernetes
 
       - name: Deploy
+        if: github.ref == 'refs/heads/develop'
         run: |
           export KUBECONFIG=./kubeconfig.yml
           helm upgrade -i polytope . --namespace polytope-ci
