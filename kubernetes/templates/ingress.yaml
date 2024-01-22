@@ -23,7 +23,9 @@ kind: Ingress
 metadata:
   name: polytope-ingress
   annotations:
-    # dns.operators.ecmwf.int/on-transport-server: vs-transport-https
+    {{- with .Values.deployment.extra_ingress_annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
     cert-manager.io/cluster-issuer: {{ .Values.deployment.cert_issuer }}
     nginx.ingress.kubernetes.io/proxy-body-size: "100m"
     nginx.ingress.kubernetes.io/limit-rps: "50"
@@ -68,7 +70,9 @@ metadata:
   name: polytope-ingress-downloads
   annotations:
 
-    # dns.operators.ecmwf.int/on-transport-server: vs-transport-https
+    {{- with .Values.deployment.extra_ingress_annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
     cert-manager.io/cluster-issuer: {{ .Values.deployment.cert_issuer }}
     nginx.ingress.kubernetes.io/proxy-body-size: "100m"
     nginx.ingress.kubernetes.io/limit-rps: "50"
