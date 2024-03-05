@@ -55,6 +55,7 @@ RUN set -eux \
     && mkdir -p /opt/ecmwf/mars-client-cpp \
     && mkdir -p /opt/ecmwf/mars-client-cloud \
     && mkdir -p /opt/fdb \
+    && mkdir -p /opt/fdb-gribjump \
     && touch /usr/local/bin/mars
 
 #######################################################
@@ -149,7 +150,7 @@ RUN set -eux \
     && chmod 600 /root/.ssh/id_rsa.pub \
     && echo "StrictHostKeyChecking=no" > /root/.ssh/config \
     && git clone --single-branch --branch master ssh://git@github.com/ecmwf/gribjump.git \
-    && cd gribjump && git checkout 8ac6bc26a683fce7d46948daaa783e22a94f6efe && cd .. \
+    && cd gribjump && git checkout 7dbdfba99999b656e14c97a8464d9f90f7e94349 && cd .. \
     && rm -rf /root/.ssh
 
 
@@ -231,7 +232,7 @@ FROM python:3.8-buster AS mars-base
 ARG mars_repo
 
 RUN response=$(curl -s -w "%{http_code}" ${mars_repo}) \
-    && if [ "$response" = "403" ]; then echo "Unauthorized access to ${mars_repo}"; fi
+    && if [ "$response" = "403" ]; then echo "Unauthorized access to ${mars_repo} "; fi
 
 RUN set -eux \
     && curl -o stable-public.gpg.key "${mars_repo}/private-raw-repos-config/debian/buster/stable/public.gpg.key" \
@@ -244,7 +245,7 @@ FROM mars-base as mars-base-c
 RUN apt install -y liblapack3 mars-client=6.32.1.0 mars-client-cloud=0.2.1
 
 FROM mars-base as mars-base-cpp
-RUN apt install -y mars-client-cpp=6.99.0.13
+RUN apt install -y mars-client-cpp=6.99.0.21
 
 FROM blank-base AS blank-base-c
 FROM blank-base AS blank-base-cpp
@@ -353,7 +354,7 @@ COPY --chown=polytope --from=fdb-base-final /root/.local /home/polytope/.local
 
 # Copy gribjump-related artifacts, including python libraries
 COPY --chown=polytope --from=gribjump-base-final /opt/fdb/ /opt/fdb/
-COPY --chown=polytope --from=gribjump-base-final /opt/fdb-gribjump/ /opt/fdb/fdb-gribjump/
+COPY --chown=polytope --from=gribjump-base-final /opt/fdb-gribjump/ /opt/fdb-gribjump/
 COPY --chown=polytope --from=gribjump-base-final /root/.local /home/polytope/.local
 RUN sudo apt install -y libopenjp2-7
 COPY polytope-deployment/common/default_fdb_schema /polytope/config/fdb/default
@@ -363,8 +364,6 @@ COPY --chown=polytope --from=worker-base /root/.local /home/polytope/.local
 
 # Install the server source
 COPY --chown=polytope ./polytope-server/ /polytope/
-
-ENV GRIBJUMP_DEBUG=1
 
 RUN set -eux \
     && mkdir /home/polytope/data

@@ -70,6 +70,8 @@ spec:
             value: "1073741824"
           - name: MIR_GRIB_INPUT_BUFFER_SIZE
             value: "1073741824"
+          - name: METKIT_RAW_PARAM
+            value: "1"
         volumeMounts:
           - name: config-volume
             mountPath: /etc/polytope
