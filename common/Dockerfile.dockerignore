@@ -11,6 +11,12 @@
 !polytope-server/MANIFEST.in
 !polytope-server/requirements.txt
 !polytope-server/setup.py
+!polytope-mars
+!fdb5
+!fdbremote
+!polytope
+!eccovjson
+!polytope-config/auxiliary
 
 # apply normal rules on top of that
 

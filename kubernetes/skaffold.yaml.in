@@ -13,7 +13,7 @@ build:
   cluster:
     namespace:
     dockerConfig:
-      secretName: polytope-registry-cred-opaque
+      secretName: polytope-registry-cred
   {% else %}
   local:
     useBuildkit: True
@@ -50,7 +50,6 @@ build:
       buildArgs:
         proxy: "{{ build_proxy }}"
 
-
   # Worker
   - image: "{{ build_registry }}/worker"
     context: ../../
@@ -78,12 +77,18 @@ build:
           {{ ssh_public | indent(10) }}
         ssh_prv_key: |
           {{ ssh_private | indent(10) }}
-        install_mars: {{ config['deployment']['build']['install_mars'] }}
-        install_fdb: {{ config['deployment']['build']['install_fdb'] }}
+
         mars_repo: {{ config['deployment']['build']['mars_repo'] }}
         mars_config_repo: {{ config['deployment']['build']['mars_config_repo'] }}
         mars_config_branch: {{ config['deployment']['build']['mars_config_branch'] }}
         fdb_repo: {{ config['deployment']['build']['fdb_repo'] }}
+        gribjump_repo: {{ config['deployment']['build']['gribjump_repo'] }}
+
+        mars_base_c: {{ 'mars-base-c' if config['deployment']['build']['install_mars_c'] else 'blank-base' }}
+        mars_base_cpp: {{ 'mars-base-cpp' if config['deployment']['build']['install_mars_cpp'] else 'blank-base' }}
+        fdb_base: {{ 'fdb-base' if config['deployment']['build']['install_fdb'] else 'blank-base' }}
+        gribjump_base: {{ 'gribjump-base' if config['deployment']['build']['install_gribjump'] else 'blank-base' }}
+
     sync:
       infer:
         - "**/*.py"

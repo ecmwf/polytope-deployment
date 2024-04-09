@@ -23,7 +23,9 @@ kind: Ingress
 metadata:
   name: polytope-ingress
   annotations:
-    # dns.operators.ecmwf.int/on-transport-server: vs-transport-https
+    {{- with .Values.deployment.extra_ingress_annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
     cert-manager.io/cluster-issuer: {{ .Values.deployment.cert_issuer }}
     nginx.ingress.kubernetes.io/proxy-body-size: "100m"
     nginx.ingress.kubernetes.io/limit-rps: "50"
@@ -68,7 +70,9 @@ metadata:
   name: polytope-ingress-downloads
   annotations:
 
-    # dns.operators.ecmwf.int/on-transport-server: vs-transport-https
+    {{- with .Values.deployment.extra_ingress_annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
     cert-manager.io/cluster-issuer: {{ .Values.deployment.cert_issuer }}
     nginx.ingress.kubernetes.io/proxy-body-size: "100m"
     nginx.ingress.kubernetes.io/limit-rps: "50"
@@ -91,7 +95,11 @@ metadata:
 
 spec:
   rules:
-  - host: downloads.{{ .Values.deployment.public_endpoint_dns_name }}
+  - {{ if .Values.deployment.downloads_public_endpoint_dns_name }}
+    host: {{ .Values.deployment.downloads_public_endpoint_dns_name }}
+    {{ else }}
+    host: downloads.{{ .Values.deployment.public_endpoint_dns_name }}
+    {{ end }}
     http:
       paths:
       - path: /
@@ -120,5 +128,9 @@ spec:
       {{ end }}
   tls:
   - hosts:
+    {{ if .Values.deployment.downloads_public_endpoint_dns_name }}
+    - {{ .Values.deployment.downloads_public_endpoint_dns_name }}
+    {{ else }}
     - downloads.{{ .Values.deployment.public_endpoint_dns_name }}
+    {{ end }}
     secretName: {{ .Values.deployment.downloads_tls_secret }}

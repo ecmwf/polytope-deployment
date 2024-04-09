@@ -81,5 +81,19 @@ make -j4
 make install
 cd $root
 
+
+# Install gribjump
+
+if [ ! -d /polytope/gribjump ]; then
+    mkdir -p $root/build/gribjump
+    cd $root/build/gribjump
+    $ecbuild --prefix=/opt/fdb -- -DCMAKE_PREFIX_PATH="/opt/fdb;/opt/fdb/eckit;/opt/fdb/metkit;/opt/fdb/fdb" /polytope/gribjump
+    make -j4
+    make install
+    cd $root
+fi
+
+
+
 rm -rf source
 rm -rf build
