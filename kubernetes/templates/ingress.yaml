@@ -95,7 +95,11 @@ metadata:
 
 spec:
   rules:
-  - host: downloads.{{ .Values.deployment.public_endpoint_dns_name }}
+  - {{ if .Values.deployment.downloads_public_endpoint_dns_name }}
+    host: {{ .Values.deployment.downloads_public_endpoint_dns_name }}
+    {{ else }}
+    host: downloads.{{ .Values.deployment.public_endpoint_dns_name }}
+    {{ end }}
     http:
       paths:
       - path: /
@@ -124,5 +128,9 @@ spec:
       {{ end }}
   tls:
   - hosts:
+    {{ if .Values.deployment.downloads_public_endpoint_dns_name }}
+    - {{ .Values.deployment.downloads_public_endpoint_dns_name }}
+    {{ else }}
     - downloads.{{ .Values.deployment.public_endpoint_dns_name }}
+    {{ end }}
     secretName: {{ .Values.deployment.downloads_tls_secret }}

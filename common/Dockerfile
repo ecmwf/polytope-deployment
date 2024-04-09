@@ -245,7 +245,9 @@ FROM mars-base as mars-base-c
 RUN apt install -y liblapack3 mars-client=6.32.1.0 mars-client-cloud=0.2.1
 
 FROM mars-base as mars-base-cpp
-RUN apt install -y mars-client-cpp=6.99.0.21
+RUN apt update && apt install -y mars-client-cpp=6.99.1.5
+RUN set -eux \
+    && python3 -m pip install git+https://github.com/ecmwf/pyfdb.git@master --user
 
 FROM blank-base AS blank-base-c
 FROM blank-base AS blank-base-cpp
@@ -322,6 +324,7 @@ COPY --chown=polytope /polytope-deployment/common/mars-wrapper.py  /polytope/bin
 COPY --chown=polytope /polytope-deployment/common/mars-wrapper-docker.py  /polytope/bin/mars-wrapper-docker.py
 
 COPY --chown=polytope --from=mars-cpp-base-final   /opt/ecmwf/mars-client-cpp  /opt/ecmwf/mars-client-cpp
+COPY --chown=polytope --from=mars-cpp-base-final    /root/.local /home/polytope/.local
 COPY --chown=polytope --from=mars-c-base-final     /opt/ecmwf/mars-client      /opt/ecmwf/mars-client
 COPY --chown=polytope --from=mars-c-base-final     /usr/local/bin/mars      /usr/local/bin/mars
 RUN sudo apt install -y libgomp1 git libnetcdf13 liblapack3
