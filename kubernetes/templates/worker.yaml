@@ -21,6 +21,97 @@
 
 {{ if .Values.worker }}
 
+{{ if eq .Values.deployment.worker.type "deployment" }}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+spec:
+  replicas: {{ .Values.deployment.worker.replicas }}
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ .Values | toYaml | sha256sum }}
+        date: {{ date "20060102150405" .Release.Time | quote }}
+      labels:
+        app: worker
+    spec:
+      containers:
+      - name: worker-pod
+        {{ if .Values.deployment.fqn_images }}
+        image: {{ .Values.deployment.fqn_images.worker }}
+        {{ else if .Values.deployment.build.tag }}
+        image: {{ .Values.deployment.build.registry }}/worker:{{ .Values.deployment.build.tag }}
+        {{ else }}
+        image: {{ .Values.deployment.build.registry }}/worker:{{ .Release.Namespace }}-latest
+        {{ end }}
+        imagePullPolicy: Always
+        env:
+          - name: K8S_POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: K8S_NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          - name: K8S_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: POLYTOPE_PROXY
+            value: {{ .Values.deployment.polytope_proxy }}
+          - name: MIR_CACHE_PATH
+            value: /home/polytope/data/mir_cache
+          - name: MARS_READANY_BUFFER_SIZE
+            value: "1073741824"
+          - name: MIR_GRIB_INPUT_BUFFER_SIZE
+            value: "1073741824"
+          - name: METKIT_RAW_PARAM
+            value: "1"
+        volumeMounts:
+          - name: config-volume
+            mountPath: /etc/polytope
+          - name: ppdir
+            mountPath: /var/tmp/ppdir
+          - name: statistics
+            mountPath: /logs/mars/statistics
+          - name: tmp
+            mountPath: /tmp
+        command: ["python"]
+        args: ["-m", "polytope_server.worker"]
+      volumes:
+        - name: config-volume
+          configMap:
+            name: polytope-config
+        - name: ppdir
+          emptyDir: {}
+        - name: statistics
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+      securityContext:
+        fsGroup: 1500
+      imagePullSecrets:
+        - name: polytope-registry-cred
+  {{ if .Values.deployment.worker_node }}
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                  - {{ .Values.deployment.worker_node }}
+  {{ end }}
+
+{{ else }}
+
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -176,7 +267,10 @@ spec:
     port: 5004
     name: tcp5004
 
-{{ end }}
+{{ end }} # range loop
+
+{{ end }} # stateful/deployment switch
+
 ---
 
 # Service account rules give the mars-wrapper the ability to do "get" on the "services" endpoint,
@@ -203,6 +297,8 @@ roleRef:
   kind: Role
   name: mars-client
   apiGroup: rbac.authorization.k8s.io
+
+
 
 
 {{ end }}
