@@ -83,7 +83,7 @@ ENV PATH=/ecbuild/bin:$PATH
 # Install eckit
 RUN set -eux && \
     git clone --depth 1 --branch develop https://github.com/ecmwf/eckit.git /source/eckit && \
-    cd /source/eckit && git checkout 1e188aa0c5e98aa88442292448f5f49aabab6332 && \
+    cd /source/eckit && git checkout develop && \
     mkdir -p /build/eckit && \
     cd /build/eckit && \
     ecbuild --prefix=/opt/fdb -- -DCMAKE_PREFIX_PATH=/opt/fdb /source/eckit && \
@@ -101,8 +101,8 @@ RUN set -eux && \
 
 # Install metkit
 RUN set -eux && \
-    git clone --depth 1 --branch feature/grib-jump https://github.com/ecmwf/metkit.git /source/metkit && \
-    cd /source/metkit && git checkout 00232883a0a3a5c5e944ed9fe4b024f110914858 && \
+    git clone --depth 1 --branch develop https://github.com/ecmwf/metkit.git /source/metkit && \
+    cd /source/metkit && git checkout develop && \
     mkdir -p /build/metkit && \
     cd /build/metkit && \
     ecbuild --prefix=/opt/fdb -- -DCMAKE_PREFIX_PATH=/opt/fdb /source/metkit && \
@@ -112,7 +112,7 @@ RUN set -eux && \
 # Install fdb \
 RUN set -eux && \
     git clone --depth 1 --branch develop https://github.com/ecmwf/fdb.git /source/fdb && \
-    cd /source/fdb && git checkout eab33cff520110e4450a54bca731a3cd03c84bcc && \
+    cd /source/fdb && git checkout develop && \
     mkdir -p /build/fdb && \
     cd /build/fdb && \
     ecbuild --prefix=/opt/fdb -- -DCMAKE_PREFIX_PATH="/opt/fdb;/opt/fdb/eckit;/opt/fdb/metkit" /source/fdb && \
@@ -149,8 +149,7 @@ RUN set -eux \
     && chmod 600 /root/.ssh/id_rsa \
     && chmod 600 /root/.ssh/id_rsa.pub \
     && echo "StrictHostKeyChecking=no" > /root/.ssh/config \
-    && git clone --single-branch --branch master ssh://git@github.com/ecmwf/gribjump.git \
-    && cd gribjump && git checkout 7dbdfba99999b656e14c97a8464d9f90f7e94349 && cd .. \
+    && git clone --single-branch --branch develop ssh://git@github.com/ecmwf/gribjump.git \
     && rm -rf /root/.ssh
 
 
