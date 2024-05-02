@@ -4,6 +4,8 @@
 #         D E P L O Y M E N T
 #########################################
 
+{{ if .Values.staging.s3 }}
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -68,7 +70,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 500Gi
+      storage: {{ .Values.deployment.minio.size }}
 
 ---
 
@@ -90,4 +92,5 @@ spec:
   selector:
     app: minio
 
+{{ end }}
 {{ end }}
