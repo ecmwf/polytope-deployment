@@ -110,6 +110,10 @@ spec:
             name: {{ .Values.staging.polytope.host }}
             port:
               number: {{ .Values.staging.polytope.port }}
+            {{ else if .Values.staging.s3_boto3 }}
+            name: {{ .Values.staging.s3_boto3.host }}
+            port:
+              number: {{ .Values.staging.s3_boto3.port }}
             {{ else }}
             name: {{ .Values.staging.s3.host }}
             port:
@@ -121,6 +125,10 @@ spec:
       name: {{ .Values.staging.polytope.host }}
       port:
         number: {{ .Values.staging.polytope.port }}
+      {{ else if .Values.staging.s3_boto3 }}
+      name: {{ .Values.staging.s3_boto3.host }}
+      port:
+        number: {{ .Values.staging.s3_boto3.port }}
       {{ else }}
       name: {{ .Values.staging.s3.host }}
       port:
