@@ -64,6 +64,32 @@ spec:
 
 ---
 
+
+{{ if .Values.staging.s3_boto3 }}
+{{ if .Values.staging.s3_boto3.random_host }}
+
+
+# Create specific service for each filer
+
+{{ range $i := until (.Values.staging.s3_boto3.random_host.max | int) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $.Values.staging.s3_boto3.random_host.headless_service }}-{{ $i }}
+spec:
+  ports:
+  - port: 8333
+    targetPort: 8333
+  clusterIP: None
+  selector:
+    statefulset.kubernetes.io/pod-name: {{ $.Values.staging.s3_boto3.random_host.headless_service }}-{{ $i }}
+---
+{{ end }}
+
+---
+
+# Create download endpoint with re-write
+
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -88,6 +114,75 @@ metadata:
     ingress.kubernetes.io/ssl-redirect: "False"
     {{ end }}
 
+    # we need to force an auth header into the request if it doesn't exist, we can do this by telling nginx that /api/v1/test is an auth server (it always returns 200).
+    nginx.ingress.kubernetes.io/auth-url: http://{{ .Values.frontend.host }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.frontend.port }}/api/v1/test
+    nginx.ingress.kubernetes.io/auth-response-headers: Authorization
+
+    nginx.ingress.kubernetes.io/rewrite-target: /$1/$2
+
+spec:
+  rules:
+  - {{ if .Values.deployment.downloads_public_endpoint_dns_name }}
+    host: {{ .Values.deployment.downloads_public_endpoint_dns_name }}
+    {{ else }}
+    host: downloads.{{ .Values.deployment.public_endpoint_dns_name }}
+    {{ end }}
+    http:
+      paths:
+      {{ range $i := until (.Values.staging.s3_boto3.random_host.max | int) }}
+      - path: /{{ $i }}/([^/]+)/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ $.Values.staging.s3_boto3.random_host.headless_service }}-{{$i}}
+            port:
+              number: {{ $.Values.staging.s3_boto3.port }}
+      {{ end }}
+  defaultBackend:
+    service:
+      name: {{ .Values.staging.s3_boto3.host }}
+      port:
+        number: {{ .Values.staging.s3_boto3.port }}
+  tls:
+  - hosts:
+    {{ if .Values.deployment.downloads_public_endpoint_dns_name }}
+    - {{ .Values.deployment.downloads_public_endpoint_dns_name }}
+    {{ else }}
+    - downloads.{{ .Values.deployment.public_endpoint_dns_name }}
+    {{ end }}
+    secretName: {{ .Values.deployment.downloads_tls_secret }}
+
+
+
+
+{{ else }} # normal single-route downloads
+
+
+
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: polytope-ingress-downloads
+  annotations:
+
+    {{- with .Values.deployment.extra_ingress_annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    cert-manager.io/cluster-issuer: {{ .Values.deployment.cert_issuer }}
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/limit-rps: "50"
+    nginx.ingress.kubernetes.io/limit-req-status-code: "429"
+    nginx.org/proxy-buffering: "False"
+    nginx.org/proxy-max-temp-file-size: "1024000m"
+    kubernetes.io/ingress.class: nginx
+    {{ if .Values.deployment.ingress.https_rewrite }}
+    nginx.org/redirect-to-https: "True"
+    ingress.kubernetes.io/ssl-redirect: "True"
+    {{ else }}
+    nginx.org/redirect-to-https: "False"
+    ingress.kubernetes.io/ssl-redirect: "False"
+    {{ end }}
 
     # we need to force an auth header into the request if it doesn't exist, we can do this by telling nginx that /api/v1/test is an auth server (it always returns 200).
     nginx.ingress.kubernetes.io/auth-url: http://{{ .Values.frontend.host }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.frontend.port }}/api/v1/test
@@ -142,3 +237,7 @@ spec:
     - downloads.{{ .Values.deployment.public_endpoint_dns_name }}
     {{ end }}
     secretName: {{ .Values.deployment.downloads_tls_secret }}
+
+
+{{ end }}
+{{ end }}
