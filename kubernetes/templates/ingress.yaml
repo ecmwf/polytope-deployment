@@ -23,10 +23,10 @@ kind: Ingress
 metadata:
   name: polytope-ingress
   annotations:
-    {{- with .Values.deployment.extra_ingress_annotations }}
+    {{- with .Values.deployment.ingress.extra_ingress_annotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
-    cert-manager.io/cluster-issuer: {{ .Values.deployment.cert_issuer }}
+    cert-manager.io/cluster-issuer: {{ .Values.deployment.ingress.cert_issuer }}
     nginx.ingress.kubernetes.io/proxy-body-size: "100m"
     nginx.ingress.kubernetes.io/limit-rps: "50"
     nginx.ingress.kubernetes.io/limit-req-status-code: "429"
