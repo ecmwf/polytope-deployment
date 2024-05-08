@@ -21,3 +21,13 @@
 apiVersion: v1
 name: polytope
 version: 0.0.1
+
+dependencies:
+  - name: mysql
+    version: 10.2.2
+    repository: https://charts.bitnami.com/bitnami
+    condition: mysql.enabled
+  - name: seaweedfs
+    version: 3.67.0
+    repository: https://seaweedfs.github.io/seaweedfs/helm
+    condition: seaweedfs.enabled
