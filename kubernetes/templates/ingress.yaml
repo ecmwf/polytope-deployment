@@ -17,7 +17,7 @@
 ## granted to it by virtue of its status as an intergovernmental organisation nor
 ## does it submit to any jurisdiction.
 ##
-
+{{ if .Values.deployment.ingress.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -42,202 +42,57 @@ metadata:
     {{ end }}
 spec:
   rules:
-  - host: {{ .Values.deployment.public_endpoint_dns_name }}
+  - host: {{ .Values.deployment.ingress.public_endpoint_dns_name }}
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: frontend
+            name: {{ .Values.deployment.ingress.host }}
             port:
-              number: 32002
+              number: {{ .Values.deployment.ingress.port }}
   defaultBackend:
     service:
-      name: frontend
+      name: {{ .Values.deployment.ingress.host }}
       port:
-        number: 32002
+        number: {{ .Values.deployment.ingress.port }}
   tls:
   - hosts:
-    - {{ .Values.deployment.public_endpoint_dns_name }}
-    secretName: {{ .Values.deployment.frontend_tls_secret }}
+    - {{ .Values.deployment.ingress.public_endpoint_dns_name }}
+    secretName: {{ .Values.deployment.ingress.frontend_tls_secret }}
 
 ---
-
-
-{{ if .Values.staging.s3_boto3 }}
-{{ if .Values.staging.s3_boto3.random_host }}
-
-
-# Create specific service for each filer
-
-{{ range $i := until (.Values.staging.s3_boto3.random_host.max | int) }}
-apiVersion: v1
-kind: Service
-metadata:
-  name: {{ $.Values.staging.s3_boto3.random_host.headless_service }}-{{ $i }}
-spec:
-  ports:
-  - port: 8333
-    targetPort: 8333
-  clusterIP: None
-  selector:
-    statefulset.kubernetes.io/pod-name: {{ $.Values.staging.s3_boto3.random_host.headless_service }}-{{ $i }}
----
-{{ end }}
-
----
-
-# Create download endpoint with re-write
 
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: polytope-ingress-downloads
   annotations:
-
-    {{- with .Values.deployment.extra_ingress_annotations }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
-    cert-manager.io/cluster-issuer: {{ .Values.deployment.cert_issuer }}
-    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
-    nginx.ingress.kubernetes.io/limit-rps: "50"
-    nginx.ingress.kubernetes.io/limit-req-status-code: "429"
-    nginx.org/proxy-buffering: "False"
-    nginx.org/proxy-max-temp-file-size: "1024000m"
+    cert-manager.io/cluster-issuer: ov-issuer
+    dns.operators.ecmwf.int/on-transport-server: vs-transport-https
     kubernetes.io/ingress.class: nginx
-    {{ if .Values.deployment.ingress.https_rewrite }}
+    nginx.ingress.kubernetes.io/limit-req-status-code: "429"
+    nginx.ingress.kubernetes.io/limit-rps: "50"
+    nginx.ingress.kubernetes.io/proxy-body-size: 100m
+    nginx.org/proxy-buffering: "False"
+    nginx.org/proxy-max-temp-file-size: 1024000m
     nginx.org/redirect-to-https: "True"
-    ingress.kubernetes.io/ssl-redirect: "True"
-    {{ else }}
-    nginx.org/redirect-to-https: "False"
-    ingress.kubernetes.io/ssl-redirect: "False"
-    {{ end }}
-
-    # we need to force an auth header into the request if it doesn't exist, we can do this by telling nginx that /api/v1/test is an auth server (it always returns 200).
-    nginx.ingress.kubernetes.io/auth-url: http://{{ .Values.frontend.host }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.frontend.port }}/api/v1/test
-    nginx.ingress.kubernetes.io/auth-response-headers: Authorization
-
-    nginx.ingress.kubernetes.io/rewrite-target: /$1/$2
-
+  name: polytope-ingress-downloads
 spec:
   rules:
-  - {{ if .Values.deployment.downloads_public_endpoint_dns_name }}
-    host: {{ .Values.deployment.downloads_public_endpoint_dns_name }}
-    {{ else }}
-    host: downloads.{{ .Values.deployment.public_endpoint_dns_name }}
-    {{ end }}
+  - host: {{ .Values.deployment.ingress.downloads.downloads_public_endpoint_dns_name }}
     http:
       paths:
-      {{ range $i := until (.Values.staging.s3_boto3.random_host.max | int) }}
-      - path: /{{ $i }}/([^/]+)/(.*)
-        pathType: Prefix
-        backend:
+      - backend:
           service:
-            name: {{ $.Values.staging.s3_boto3.random_host.headless_service }}-{{$i}}
+            name: {{ .Values.deployment.ingress.downloads.host }}
             port:
-              number: {{ $.Values.staging.s3_boto3.port }}
-      {{ end }}
-  defaultBackend:
-    service:
-      name: {{ .Values.staging.s3_boto3.host }}
-      port:
-        number: {{ .Values.staging.s3_boto3.port }}
+              number: {{ .Values.deployment.ingress.downloads.port }}
+        path: /
+        pathType: Prefix
   tls:
   - hosts:
-    {{ if .Values.deployment.downloads_public_endpoint_dns_name }}
-    - {{ .Values.deployment.downloads_public_endpoint_dns_name }}
-    {{ else }}
-    - downloads.{{ .Values.deployment.public_endpoint_dns_name }}
-    {{ end }}
-    secretName: {{ .Values.deployment.downloads_tls_secret }}
+    - {{ .Values.deployment.ingress.downloads.downloads_public_endpoint_dns_name }}
+    secretName: {{ .Values.deployment.ingress.downloads.downloads_tls_secret }}
 
-
-
-
-{{ else }} # normal single-route downloads
-
-
-
-
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: polytope-ingress-downloads
-  annotations:
-
-    {{- with .Values.deployment.extra_ingress_annotations }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
-    cert-manager.io/cluster-issuer: {{ .Values.deployment.cert_issuer }}
-    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
-    nginx.ingress.kubernetes.io/limit-rps: "50"
-    nginx.ingress.kubernetes.io/limit-req-status-code: "429"
-    nginx.org/proxy-buffering: "False"
-    nginx.org/proxy-max-temp-file-size: "1024000m"
-    kubernetes.io/ingress.class: nginx
-    {{ if .Values.deployment.ingress.https_rewrite }}
-    nginx.org/redirect-to-https: "True"
-    ingress.kubernetes.io/ssl-redirect: "True"
-    {{ else }}
-    nginx.org/redirect-to-https: "False"
-    ingress.kubernetes.io/ssl-redirect: "False"
-    {{ end }}
-
-    # we need to force an auth header into the request if it doesn't exist, we can do this by telling nginx that /api/v1/test is an auth server (it always returns 200).
-    nginx.ingress.kubernetes.io/auth-url: http://{{ .Values.frontend.host }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.frontend.port }}/api/v1/test
-    nginx.ingress.kubernetes.io/auth-response-headers: Authorization
-
-spec:
-  rules:
-  - {{ if .Values.deployment.downloads_public_endpoint_dns_name }}
-    host: {{ .Values.deployment.downloads_public_endpoint_dns_name }}
-    {{ else }}
-    host: downloads.{{ .Values.deployment.public_endpoint_dns_name }}
-    {{ end }}
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            {{ if .Values.staging.polytope }}
-            name: {{ .Values.staging.polytope.host }}
-            port:
-              number: {{ .Values.staging.polytope.port }}
-            {{ else if .Values.staging.s3_boto3 }}
-            name: {{ .Values.staging.s3_boto3.host }}
-            port:
-              number: {{ .Values.staging.s3_boto3.port }}
-            {{ else }}
-            name: {{ .Values.staging.s3.host }}
-            port:
-              number: {{ .Values.staging.s3.port }}
-            {{ end }}
-  defaultBackend:
-    service:
-      {{ if .Values.staging.polytope }}
-      name: {{ .Values.staging.polytope.host }}
-      port:
-        number: {{ .Values.staging.polytope.port }}
-      {{ else if .Values.staging.s3_boto3 }}
-      name: {{ .Values.staging.s3_boto3.host }}
-      port:
-        number: {{ .Values.staging.s3_boto3.port }}
-      {{ else }}
-      name: {{ .Values.staging.s3.host }}
-      port:
-        number: {{ .Values.staging.s3.port }}
-      {{ end }}
-  tls:
-  - hosts:
-    {{ if .Values.deployment.downloads_public_endpoint_dns_name }}
-    - {{ .Values.deployment.downloads_public_endpoint_dns_name }}
-    {{ else }}
-    - downloads.{{ .Values.deployment.public_endpoint_dns_name }}
-    {{ end }}
-    secretName: {{ .Values.deployment.downloads_tls_secret }}
-
-
-{{ end }}
-{{ end }}
+{{ end }} # end of ingress enabled check defined in the beginning
