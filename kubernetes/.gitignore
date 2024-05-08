@@ -1,2 +1,3 @@
 skaffold.yaml
 values.yaml
+*.tgz
