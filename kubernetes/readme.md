@@ -12,7 +12,7 @@ Kubernetes can be used to deploy the full polytope stack, including multiple par
 * Skaffold ≥ 1.13.2
 * kubectl configured to point to a Kubernetes cluster
 * `docker login <registry>`
-* helm dependency build
+* `helm dependency build`
 
 ## Configure
 
