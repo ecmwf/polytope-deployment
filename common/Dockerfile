@@ -229,6 +229,7 @@ RUN set -eux \
 #######################################################
 FROM python:3.8-buster AS mars-base
 ARG mars_repo
+ARG mars_client_cpp_version
 
 RUN response=$(curl -s -w "%{http_code}" ${mars_repo}) \
     && if [ "$response" = "403" ]; then echo "Unauthorized access to ${mars_repo} "; fi
@@ -244,7 +245,7 @@ FROM mars-base as mars-base-c
 RUN apt install -y liblapack3 mars-client=6.32.1.0 mars-client-cloud=0.2.1
 
 FROM mars-base as mars-base-cpp
-RUN apt update && apt install -y mars-client-cpp=6.99.1.5
+RUN apt update && apt install -y mars-client-cpp=${mars_client_cpp_version}
 RUN set -eux \
     && python3 -m pip install git+https://github.com/ecmwf/pyfdb.git@master --user
 

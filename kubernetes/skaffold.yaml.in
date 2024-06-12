@@ -81,6 +81,7 @@ build:
         mars_repo: {{ config['deployment']['build']['mars_repo'] }}
         mars_config_repo: {{ config['deployment']['build']['mars_config_repo'] }}
         mars_config_branch: {{ config['deployment']['build']['mars_config_branch'] }}
+        mars_client_cpp_version: {{ config['deployment']['build']['mars_client_cpp_version'] }}
         fdb_repo: {{ config['deployment']['build']['fdb_repo'] }}
         gribjump_repo: {{ config['deployment']['build']['gribjump_repo'] }}
 
