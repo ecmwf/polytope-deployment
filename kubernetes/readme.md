@@ -29,7 +29,25 @@ The `configure.py` tool takes any number of polytope configuration files which w
 
 Skaffold orchestrates the building of all the docker images. These are then deployed with Helm.
 
+### Generate polytope-registry-cred secret
+For this step you need a file that looks like this:
+```json
+{
+	"auths": {
+		"eccr.ecmwf.int": {
+			"auth": "base64 of username:password"
+		}
+	}
+}
+``` in principle your `~/.docker/config.json` should look like this, but since it often won't, the easiest thing is to just create a dummy one yourself. The command to run to generate the value for the auth key is:
+```sh
+echo -n 'username:password' | base64
 ```
+The single quotes and -n argument to echo are important to prevent echo trying to quote the string and to suppress the automatic newline. Paste the result into the file above and use that in place of "${HOME}/.docker/config.json" in the create secret command below.
+
+### Build
+
+```sh
 skaffold build
 kubectl create secret generic polytope-registry-cred \
     --from-file=.dockerconfigjson=${HOME}/.docker/config.json \
