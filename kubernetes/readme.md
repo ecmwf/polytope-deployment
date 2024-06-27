@@ -16,7 +16,7 @@ Kubernetes can be used to deploy the full polytope stack, including multiple par
 
 ## Configure
 
-```
+```shell
 cd ./kubernetes
 configure.py -f /path/to/config.yaml -f more_config
 ```
@@ -29,35 +29,14 @@ The `configure.py` tool takes any number of polytope configuration files which w
 
 Skaffold orchestrates the building of all the docker images. These are then deployed with Helm.
 
-### Generate polytope-registry-cred secret
-For this step you need a file that looks like this:
-```json
-{
-	"auths": {
-		"eccr.ecmwf.int": {
-			"auth": "base64 of username:password"
-		}
-	}
-}
-``` in principle your `~/.docker/config.json` should look like this, but since it often won't, the easiest thing is to just create a dummy one yourself. The command to run to generate the value for the auth key is:
-```sh
-echo -n 'username:password' | base64
-```
-The single quotes and -n argument to echo are important to prevent echo trying to quote the string and to suppress the automatic newline. Paste the result into the file above and use that in place of "${HOME}/.docker/config.json" in the create secret command below.
-
-### Build
-
-```sh
+```shell
 skaffold build
-kubectl create secret generic polytope-registry-cred \
-    --from-file=.dockerconfigjson=${HOME}/.docker/config.json \
-    --type=kubernetes.io/dockerconfigjson 2>&1
 helm install polytope .
 ```
 
 Here are some handy commands for managing the deployment:
 
-```
+```shell
 kubectl get pods
 kubectl logs worker-<hash>
 kubectl get svc
@@ -72,8 +51,7 @@ You can also use Helm via Skaffold, and use some of its extra features -- especi
 
 The helpful `./whereis.sh` script will quickly tell you how to reach your deployed polytope server.
 
-
-# Setting up HTTPs
+## Setting up HTTPs
 
 In order for HTTPs to be served, an ingress has to be deployed. In Kubernetes deployments an ingress is always deployed.
 
