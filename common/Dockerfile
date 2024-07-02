@@ -67,7 +67,7 @@ RUN apt update
 
 # Install FDB from open source repositories
 RUN set -eux && \
-    apt install -y cmake gnupg build-essential libtinfo5 net-tools libnetcdf13 libnetcdf-dev bison flex && \
+    apt install -y cmake gnupg build-essential libtinfo5 net-tools libnetcdf19 libnetcdf-dev bison flex && \
     rm -rf source && \
     rm -rf build && \
     mkdir -p source && \
@@ -239,7 +239,7 @@ RUN set -eux \
     && echo "deb ${mars_repo}/private-debian-buster-stable/ buster main" >> /etc/apt/sources.list \
     && apt-key add stable-public.gpg.key \
     && apt-get update \
-    && apt install -y libnetcdf13 liblapack3
+    && apt install -y libnetcdf19 liblapack3
 
 FROM mars-base as mars-base-c
 RUN apt install -y liblapack3 mars-client=6.32.1.0 mars-client-cloud=0.2.1
