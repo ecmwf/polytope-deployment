@@ -29,9 +29,18 @@ The `configure.py` tool takes any number of polytope configuration files which w
 
 Skaffold orchestrates the building of all the docker images. These are then deployed with Helm.
 
-```shell
+
+### Build
+
+```sh
 skaffold build
 helm install polytope .
+```
+
+If you get errors about seaweedfs, do this:
+```
+helm repo add seaweedfs https://seaweedfs.github.io/seaweedfs/helm
+helm dependency build
 ```
 
 Here are some handy commands for managing the deployment:

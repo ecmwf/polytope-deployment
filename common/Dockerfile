@@ -30,7 +30,7 @@ ARG gribjump_base=blank-base
 
 FROM python:3.12-alpine AS polytope-common
 
-RUN apk add --no-cache --virtual .build-deps gcc musl-dev openldap openldap-dev curl
+RUN apk add --no-cache --virtual .build-deps gcc musl-dev openldap openldap-dev curl libffi libffi-dev
 
 RUN set -eux \
     && addgroup --system polytope --gid 474 \
@@ -47,7 +47,7 @@ RUN python -m pip install --upgrade .
 #######################################################
 #                N O O P   I M A G E
 #######################################################
-FROM python:3.12-bookworm AS blank-base
+from python:3.12-slim-bookworm AS blank-base
 # create blank directories to copy from in the final stage, optional dependencies aren't built
 RUN set -eux \
     && mkdir -p /root/.local \
@@ -61,13 +61,13 @@ RUN set -eux \
 #######################################################
 #                  F D B   B U I L D
 #######################################################
-FROM python:3.12-bookworm AS fdb-base
+from python:3.12-slim-bookworm AS fdb-base
 RUN apt update
 # COPY polytope-deployment/common/default_fdb_schema /polytope/config/fdb/default
 
 # Install FDB from open source repositories
 RUN set -eux && \
-    apt install -y cmake gnupg build-essential libtinfo5 net-tools libnetcdf13 libnetcdf-dev bison flex && \
+    apt install -y cmake gnupg build-essential libtinfo5 net-tools libnetcdf19 libnetcdf-dev bison flex && \
     rm -rf source && \
     rm -rf build && \
     mkdir -p source && \
@@ -227,7 +227,7 @@ RUN set -eux \
 #######################################################
 #               M A R S    B A S E
 #######################################################
-FROM python:3.12-bookworm AS mars-base
+from python:3.12-slim-bookworm AS mars-base
 ARG mars_repo
 ARG mars_client_cpp_version
 
@@ -239,7 +239,7 @@ RUN set -eux \
     && echo "deb ${mars_repo}/private-debian-buster-stable/ buster main" >> /etc/apt/sources.list \
     && apt-key add stable-public.gpg.key \
     && apt-get update \
-    && apt install -y libnetcdf13 liblapack3
+    && apt install -y libnetcdf19 liblapack3
 
 FROM mars-base as mars-base-c
 RUN apt install -y liblapack3 mars-client=6.32.1.0 mars-client-cloud=0.2.1
@@ -272,8 +272,7 @@ FROM python:3.12-slim-bookworm AS worker-base
 
 # contains compilers for building wheels which we don't want in the final image
 RUN apt update
-RUN apt-get install -y --no-install-recommends gcc libc6-dev make gnupg2 git && apt-get purge -y --auto-remove && \
-rm -rf /var/lib/apt/lists/*
+RUN apt-get install -y --no-install-recommends gcc libc6-dev make gnupg2 gdal-bin libgdal-dev libproj-dev git libffi8 libffi-dev
 COPY ./polytope-server/requirements.txt /requirements.txt
 RUN python -m pip install -r requirements.txt --user
 # RUN python -m pip install geopandas --user
@@ -282,13 +281,13 @@ RUN python -m pip install -r requirements.txt --user
 # COPY --chown=polytope ./polytope /polytope-fe
 # RUN python -m pip install /polytope-fe --user
 
-# # eccovjson (from source)
-# COPY --chown=polytope ./eccovjson /eccovjson
-# RUN python -m pip install /eccovjson --user
+# covjsonkit (from source)
+COPY --chown=polytope ./covjsonkit /covjsonkit
+RUN python -m pip install /covjsonkit --user
 
 # polytope-mars source
-COPY --chown=polytope ./polytope-mars/ /polytope-mars
-RUN python -m pip install /polytope-mars --user
+# COPY --chown=polytope ./polytope-mars/ /polytope-mars
+# RUN python -m pip install /polytope-mars --user
 
 #######################################################
 #                    W O R K E R
