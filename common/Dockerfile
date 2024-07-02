@@ -28,7 +28,7 @@ ARG gribjump_base=blank-base
 #                 based on alpine linux
 #######################################################
 
-FROM python:3.8-alpine3.11 AS polytope-common
+FROM python:3.12-alpine AS polytope-common
 
 RUN apk add --no-cache --virtual .build-deps gcc musl-dev openldap openldap-dev curl
 
@@ -47,7 +47,7 @@ RUN python -m pip install --upgrade .
 #######################################################
 #                N O O P   I M A G E
 #######################################################
-FROM python:3.8-buster AS blank-base
+FROM python:3.12-bookworm AS blank-base
 # create blank directories to copy from in the final stage, optional dependencies aren't built
 RUN set -eux \
     && mkdir -p /root/.local \
@@ -61,7 +61,7 @@ RUN set -eux \
 #######################################################
 #                  F D B   B U I L D
 #######################################################
-FROM python:3.8-buster AS fdb-base
+FROM python:3.12-bookworm AS fdb-base
 RUN apt update
 # COPY polytope-deployment/common/default_fdb_schema /polytope/config/fdb/default
 
@@ -227,7 +227,7 @@ RUN set -eux \
 #######################################################
 #               M A R S    B A S E
 #######################################################
-FROM python:3.8-buster AS mars-base
+FROM python:3.12-bookworm AS mars-base
 ARG mars_repo
 ARG mars_client_cpp_version
 
@@ -268,22 +268,23 @@ FROM ${gribjump_base} AS gribjump-base-final
 #######################################################
 #           P Y T H O N   R E Q U I R E M E N T S
 #######################################################
-FROM python:3.8-slim-buster AS worker-base
+FROM python:3.12-slim-bookworm AS worker-base
 
 # contains compilers for building wheels which we don't want in the final image
 RUN apt update
-RUN apt-get install -y --no-install-recommends gcc libc6-dev make gnupg2
+RUN apt-get install -y --no-install-recommends gcc libc6-dev make gnupg2 git && apt-get purge -y --auto-remove && \
+rm -rf /var/lib/apt/lists/*
 COPY ./polytope-server/requirements.txt /requirements.txt
 RUN python -m pip install -r requirements.txt --user
-RUN python -m pip install geopandas --user
+# RUN python -m pip install geopandas --user
 
 # polytope feature extraction (from source)
-COPY --chown=polytope ./polytope /polytope-fe
-RUN python -m pip install /polytope-fe --user
+# COPY --chown=polytope ./polytope /polytope-fe
+# RUN python -m pip install /polytope-fe --user
 
-# eccovjson (from source)
-COPY --chown=polytope ./eccovjson /eccovjson
-RUN python -m pip install /eccovjson --user
+# # eccovjson (from source)
+# COPY --chown=polytope ./eccovjson /eccovjson
+# RUN python -m pip install /eccovjson --user
 
 # polytope-mars source
 COPY --chown=polytope ./polytope-mars/ /polytope-mars
@@ -294,7 +295,7 @@ RUN python -m pip install /polytope-mars --user
 #               based on debian buster
 #######################################################
 
-FROM python:3.8-slim-buster AS worker
+FROM python:3.12-slim-bookworm AS worker
 
 ARG mars_config_branch
 ARG mars_config_repo
@@ -327,7 +328,7 @@ COPY --chown=polytope --from=mars-cpp-base-final   /opt/ecmwf/mars-client-cpp  /
 COPY --chown=polytope --from=mars-cpp-base-final    /root/.local /home/polytope/.local
 COPY --chown=polytope --from=mars-c-base-final     /opt/ecmwf/mars-client      /opt/ecmwf/mars-client
 COPY --chown=polytope --from=mars-c-base-final     /usr/local/bin/mars      /usr/local/bin/mars
-RUN sudo apt install -y libgomp1 git libnetcdf13 liblapack3
+RUN sudo apt install -y libgomp1 git libnetcdf19 liblapack3 
 
 
 # all of this is needed by the C client, would be nice to remove it at some point
