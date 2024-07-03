@@ -231,7 +231,9 @@ from python:3.12-slim-bookworm AS mars-base
 ARG mars_repo
 ARG mars_client_cpp_version
 
-RUN response=$(curl -s -w "%{http_code}" ${mars_repo}) \
+RUN apt-get -y update && apt-get -y install curl
+
+RUN response=$(curl -s -o /dev/null -w "%{http_code}" ${mars_repo}) \
     && if [ "$response" = "403" ]; then echo "Unauthorized access to ${mars_repo} "; fi
 
 RUN set -eux \
@@ -291,7 +293,7 @@ RUN python -m pip install /covjsonkit --user
 
 #######################################################
 #                    W O R K E R
-#               based on debian buster
+#               based on debian bookworm
 #######################################################
 
 FROM python:3.12-slim-bookworm AS worker
