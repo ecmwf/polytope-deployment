@@ -271,19 +271,19 @@ FROM ${gribjump_base} AS gribjump-base-final
 FROM python:3.8-slim-buster AS worker-base
 
 # contains compilers for building wheels which we don't want in the final image
-RUN apt update
-RUN apt-get install -y --no-install-recommends gcc libc6-dev make gnupg2
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends gcc libc6-dev make gnupg2 git
 COPY ./polytope-server/requirements.txt /requirements.txt
 RUN python -m pip install -r requirements.txt --user
 RUN python -m pip install geopandas --user
 
 # polytope feature extraction (from source)
-COPY --chown=polytope ./polytope /polytope-fe
-RUN python -m pip install /polytope-fe --user
+# COPY --chown=polytope ./polytope /polytope-fe
+# RUN python -m pip install /polytope-fe --user
 
 # eccovjson (from source)
-COPY --chown=polytope ./eccovjson /eccovjson
-RUN python -m pip install /eccovjson --user
+# COPY --chown=polytope ./eccovjson /eccovjson
+# RUN python -m pip install /eccovjson --user
 
 # polytope-mars source
 COPY --chown=polytope ./polytope-mars/ /polytope-mars
