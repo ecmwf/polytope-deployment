@@ -25,6 +25,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: telemetry
+  namespace: {{ .Values.namespace }}
 spec:
   replicas: {{ .Values.deployment.telemetry.replicas }}
   selector:
@@ -78,6 +79,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Values.telemetry.host }}
+  namespace: {{ .Values.namespace }}
 spec:
   selector:
     app: telemetry

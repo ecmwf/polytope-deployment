@@ -11,7 +11,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: elasticsearch
-  namespace: {{ .Values.deployment.namespace }}
+  namespace: {{ .Values.namespace}}
 spec:
   serviceName: elasticsearch
   replicas: 3
@@ -85,7 +85,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: elasticsearch
-  namespace: {{ .Values.deployment.namespace }}
+  namespace: {{ .Values.namespace }}
   labels:
     app: elasticsearch
 spec:
@@ -303,7 +303,7 @@ metadata:
   labels:
     app: kibana
   name: kibana
-  namespace: {{ .Values.deployment.namespace }}
+  namespace: {{ .Values.namespace }}
 spec:
   selector:
     matchLabels:
@@ -334,7 +334,7 @@ metadata:
   labels:
     app: kibana
   name: kibana-svc
-  namespace: {{ .Values.deployment.namespace }}
+  namespace: {{ .Values.namespace }}
 spec:
   ports:
   - port: 5001

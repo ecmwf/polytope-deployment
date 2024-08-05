@@ -25,6 +25,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: testrunner
+  namespace: {{ .Values.namespace }}
 spec:
   replicas: {{ .Values.deployment.testrunner.replicas }}
   selector:

@@ -25,6 +25,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: polytope-staging
+  namespace: {{ .Values.namespace }}
 spec:
   replicas: {{ .Values.deployment.polytope_staging.replicas }}
   selector:
@@ -74,6 +75,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: polytope-staging
+  namespace: {{ .Values.namespace }}
 spec:
   accessModes:
     - ReadWriteOnce
@@ -87,6 +89,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Values.deployment.polytope_staging.host }}
+  namespace: {{ .Values.namespace }}
 spec:
   selector:
     app: polytope-staging
