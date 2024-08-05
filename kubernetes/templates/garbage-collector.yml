@@ -25,6 +25,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: garbage-collector
+  namespace: {{ .Values.namespace }}
 spec:
   replicas: {{ index .Values "deployment.garbage-collector.replicas" }}
   selector:
