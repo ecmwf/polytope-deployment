@@ -28,7 +28,7 @@ ARG gribjump_base=blank-base
 #                 based on alpine linux
 #######################################################
 
-FROM python:3.8-alpine3.11 AS polytope-common
+FROM python:3.10-alpine AS polytope-common
 
 RUN apk add --no-cache --virtual .build-deps gcc musl-dev openldap openldap-dev curl
 
@@ -47,7 +47,7 @@ RUN python -m pip install --upgrade .
 #######################################################
 #                N O O P   I M A G E
 #######################################################
-FROM python:3.8-buster AS blank-base
+FROM python:3.10-bullseye AS blank-base
 # create blank directories to copy from in the final stage, optional dependencies aren't built
 RUN set -eux \
     && mkdir -p /root/.local \
@@ -61,13 +61,13 @@ RUN set -eux \
 #######################################################
 #                  F D B   B U I L D
 #######################################################
-FROM python:3.8-buster AS fdb-base
+FROM python:3.10-bullseye AS fdb-base
 RUN apt update
 # COPY polytope-deployment/common/default_fdb_schema /polytope/config/fdb/default
 
 # Install FDB from open source repositories
 RUN set -eux && \
-    apt install -y cmake gnupg build-essential libtinfo5 net-tools libnetcdf13 libnetcdf-dev bison flex && \
+    apt install -y cmake gnupg build-essential libtinfo5 net-tools libnetcdf18 libnetcdf-dev bison flex && \
     rm -rf source && \
     rm -rf build && \
     mkdir -p source && \
@@ -227,7 +227,7 @@ RUN set -eux \
 #######################################################
 #               M A R S    B A S E
 #######################################################
-FROM python:3.8-buster AS mars-base
+FROM python:3.10-bullseye AS mars-base
 ARG mars_repo
 ARG mars_client_cpp_version
 
@@ -235,11 +235,11 @@ RUN response=$(curl -s -w "%{http_code}" ${mars_repo}) \
     && if [ "$response" = "403" ]; then echo "Unauthorized access to ${mars_repo} "; fi
 
 RUN set -eux \
-    && curl -o stable-public.gpg.key "${mars_repo}/private-raw-repos-config/debian/buster/stable/public.gpg.key" \
-    && echo "deb ${mars_repo}/private-debian-buster-stable/ buster main" >> /etc/apt/sources.list \
+    && curl -o stable-public.gpg.key "${mars_repo}/private-raw-repos-config/debian/bullseye/stable/public.gpg.key" \
+    && echo "deb ${mars_repo}/private-debian-bullseye-stable/ bullseye main" >> /etc/apt/sources.list \
     && apt-key add stable-public.gpg.key \
     && apt-get update \
-    && apt install -y libnetcdf13 liblapack3
+    && apt install -y libnetcdf18 liblapack3
 
 FROM mars-base as mars-base-c
 RUN apt install -y liblapack3 mars-client=6.32.1.0 mars-client-cloud=0.2.1
@@ -268,7 +268,7 @@ FROM ${gribjump_base} AS gribjump-base-final
 #######################################################
 #           P Y T H O N   R E Q U I R E M E N T S
 #######################################################
-FROM python:3.8-slim-buster AS worker-base
+FROM python:3.10-slim-bullseye AS worker-base
 
 # contains compilers for building wheels which we don't want in the final image
 RUN apt update
@@ -281,9 +281,9 @@ RUN python -m pip install geopandas --user
 COPY --chown=polytope ./polytope /polytope-fe
 RUN python -m pip install /polytope-fe --user
 
-# eccovjson (from source)
-COPY --chown=polytope ./eccovjson /eccovjson
-RUN python -m pip install /eccovjson --user
+#covjsonkit (from source)
+COPY --chown=polytope ./covjsonkit /covjsonkit
+RUN python -m pip install /covjsonkit --user
 
 # polytope-mars source
 COPY --chown=polytope ./polytope-mars/ /polytope-mars
@@ -291,10 +291,10 @@ RUN python -m pip install /polytope-mars --user
 
 #######################################################
 #                    W O R K E R
-#               based on debian buster
+#               based on debian bullseye
 #######################################################
 
-FROM python:3.8-slim-buster AS worker
+FROM python:3.10-slim-bullseye AS worker
 
 ARG mars_config_branch
 ARG mars_config_repo
@@ -309,7 +309,7 @@ RUN set -eux \
     && mkdir /polytope && chmod -R o+rw /polytope
 
 RUN apt update
-RUN apt install -y curl nano sudo ssh libgomp1
+RUN apt install -y curl nano sudo ssh libgomp1 vim
 
 # Add polytope user to passwordless sudo group during build
 RUN usermod -aG sudo polytope
@@ -327,7 +327,8 @@ COPY --chown=polytope --from=mars-cpp-base-final   /opt/ecmwf/mars-client-cpp  /
 COPY --chown=polytope --from=mars-cpp-base-final    /root/.local /home/polytope/.local
 COPY --chown=polytope --from=mars-c-base-final     /opt/ecmwf/mars-client      /opt/ecmwf/mars-client
 COPY --chown=polytope --from=mars-c-base-final     /usr/local/bin/mars      /usr/local/bin/mars
-RUN sudo apt install -y libgomp1 git libnetcdf13 liblapack3
+RUN sudo apt update
+RUN sudo apt install -y libgomp1 git libnetcdf18 liblapack3 libfftw3-3
 
 
 # all of this is needed by the C client, would be nice to remove it at some point
@@ -373,5 +374,3 @@ RUN set -eux \
 
 # Remove itself from sudo group
 RUN sudo deluser polytope sudo
-
-
