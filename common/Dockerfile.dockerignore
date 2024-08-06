@@ -15,7 +15,7 @@
 !fdb5
 !fdbremote
 !polytope
-!eccovjson
+!covjsonkit
 !polytope-config/auxiliary
 
 # apply normal rules on top of that
