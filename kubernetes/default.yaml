@@ -18,6 +18,12 @@
 ## does it submit to any jurisdiction.
 ##
 
+seaweedfs:
+  enabled: false
+
+mysql:
+  enabled: false
+
 deployment:
   build:
     no_proxy: 
