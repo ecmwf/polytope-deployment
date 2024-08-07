@@ -1,4 +1,5 @@
 # service monitor for master
+{{ if .Values.seaweedfs.enabled}}
 {{ if .Values.seaweedfs.master.enabled }}
 {{ if .Values.seaweedfs.serviceMonitor.enabled }}
 apiVersion: monitoring.coreos.com/v1
@@ -85,3 +86,5 @@ spec:
       path: /metrics
 {{ end }}
 {{ end }}
+{{ end }}
+
