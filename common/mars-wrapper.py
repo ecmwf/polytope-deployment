@@ -24,6 +24,7 @@ import logging
 import os
 import subprocess
 import sys
+
 import requests
 
 port_file = "/persistent/last_mars_port"
@@ -35,20 +36,19 @@ def main():
     assert len(sys.argv) == 2
 
     # Read Kubernetes service account details for authentication
-    with open('/var/run/secrets/kubernetes.io/serviceaccount/token', 'r') as file:
+    with open("/var/run/secrets/kubernetes.io/serviceaccount/token", "r") as file:
         token = file.read().strip()
-    headers = {'Authorization': 'Bearer ' + token} 
-
+    headers = {"Authorization": "Bearer " + token}
 
     # Set the MARS client environment variables
     node_name = os.environ["K8S_NODE_NAME"]
     pod_name = os.environ["K8S_POD_NAME"]  # = service name
     namespace = os.environ["K8S_NAMESPACE"]
 
-    service_url = f"https://{os.environ['KUBERNETES_SERVICE_HOST']}:{os.environ['KUBERNETES_PORT_443_TCP_PORT']}/api/v1/namespaces/{namespace}/services/{pod_name}"   
-    response = requests.get(service_url, headers=headers, verify='/var/run/secrets/kubernetes.io/serviceaccount/ca.crt')
+    service_url = f"https://{os.environ['KUBERNETES_SERVICE_HOST']}:{os.environ['KUBERNETES_PORT_443_TCP_PORT']}/api/v1/namespaces/{namespace}/services/{pod_name}"
+    response = requests.get(service_url, headers=headers, verify="/var/run/secrets/kubernetes.io/serviceaccount/ca.crt")
     response.raise_for_status()  # Raise an exception for HTTP errors
-    service = response.json()['spec']
+    service = response.json()["spec"]
 
     try:
         with open(port_file, "rt") as f:
