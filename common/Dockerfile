@@ -28,13 +28,13 @@ ARG gribjump_base=blank-base
 #                 based on alpine linux
 #######################################################
 
-FROM python:3.10-alpine AS polytope-common
+FROM python:3.11-alpine AS polytope-common
 
 RUN apk add --no-cache --virtual .build-deps gcc musl-dev openldap openldap-dev curl
 
 RUN set -eux \
     && addgroup --system polytope --gid 474 \
-    && adduser --system polytope --ingroup polytope \
+    && adduser --system polytope --ingroup polytope --home /home/polytope \
     && mkdir -p /polytope && chmod -R 777 /polytope \
     && mkdir -p /data && chmod -R 777 /data
 
@@ -47,7 +47,7 @@ RUN python -m pip install --upgrade .
 #######################################################
 #                N O O P   I M A G E
 #######################################################
-FROM python:3.10-buster AS blank-base
+FROM python:3.11-bookworm AS blank-base
 # create blank directories to copy from in the final stage, optional dependencies aren't built
 RUN set -eux \
     && mkdir -p /root/.local \
@@ -61,13 +61,13 @@ RUN set -eux \
 #######################################################
 #                  F D B   B U I L D
 #######################################################
-FROM python:3.10-buster AS fdb-base
+FROM python:3.11-bookworm AS fdb-base
 RUN apt update
 # COPY polytope-deployment/common/default_fdb_schema /polytope/config/fdb/default
 
 # Install FDB from open source repositories
 RUN set -eux && \
-    apt install -y cmake gnupg build-essential libtinfo5 net-tools libnetcdf13 libnetcdf-dev bison flex && \
+    apt install -y cmake gnupg build-essential libtinfo5 net-tools libnetcdf19 libnetcdf-dev bison flex && \
     rm -rf source && \
     rm -rf build && \
     mkdir -p source && \
@@ -227,7 +227,7 @@ RUN set -eux \
 #######################################################
 #               M A R S    B A S E
 #######################################################
-FROM python:3.10-buster AS mars-base
+FROM python:3.11-bookworm AS mars-base
 ARG mars_repo
 ARG mars_client_cpp_version
 
@@ -235,16 +235,16 @@ RUN response=$(curl -s -w "%{http_code}" ${mars_repo}) \
     && if [ "$response" = "403" ]; then echo "Unauthorized access to ${mars_repo} "; fi
 
 RUN set -eux \
-    && curl -o stable-public.gpg.key "${mars_repo}/private-raw-repos-config/debian/buster/stable/public.gpg.key" \
-    && echo "deb ${mars_repo}/private-debian-buster-stable/ buster main" >> /etc/apt/sources.list \
+    && curl -o stable-public.gpg.key "${mars_repo}/private-raw-repos-config/debian/bookworm/stable/public.gpg.key" \
+    && echo "deb ${mars_repo}/private-debian-bookworm-stable/ bookworm main" >> /etc/apt/sources.list \
     && apt-key add stable-public.gpg.key \
     && apt-get update \
-    && apt install -y libnetcdf13 liblapack3
+    && apt install -y libnetcdf19 liblapack3
 
-FROM mars-base as mars-base-c
+FROM mars-base AS mars-base-c
 RUN apt install -y liblapack3 mars-client mars-client-cloud
 
-FROM mars-base as mars-base-cpp
+FROM mars-base AS mars-base-cpp
 RUN apt update && apt install -y mars-client-cpp=${mars_client_cpp_version}
 RUN set -eux \
     && python3 -m pip install git+https://github.com/ecmwf/pyfdb.git@master --user
@@ -268,7 +268,7 @@ FROM ${gribjump_base} AS gribjump-base-final
 #######################################################
 #           P Y T H O N   R E Q U I R E M E N T S
 #######################################################
-FROM python:3.10-slim-buster AS worker-base
+FROM python:3.11-slim-bookworm AS worker-base
 
 # contains compilers for building wheels which we don't want in the final image
 RUN apt update
@@ -291,10 +291,10 @@ RUN python -m pip install /polytope-mars --user
 
 #######################################################
 #                    W O R K E R
-#               based on debian buster
+#               based on debian bookworm
 #######################################################
 
-FROM python:3.10-slim-buster AS worker
+FROM python:3.11-slim-bookworm AS worker
 
 ARG mars_config_branch
 ARG mars_config_repo
@@ -305,7 +305,7 @@ ARG mars_repo
 
 RUN set -eux \
     && addgroup --system polytope --gid 474 \
-    && adduser --system polytope --ingroup polytope \
+    && adduser --system polytope --ingroup polytope --home /home/polytope \
     && mkdir /polytope && chmod -R o+rw /polytope
 
 RUN apt update
@@ -328,7 +328,7 @@ COPY --chown=polytope --from=mars-cpp-base-final    /root/.local /home/polytope/
 COPY --chown=polytope --from=mars-c-base-final     /opt/ecmwf/mars-client      /opt/ecmwf/mars-client
 COPY --chown=polytope --from=mars-c-base-final     /usr/local/bin/mars      /usr/local/bin/mars
 RUN sudo apt update
-RUN sudo apt install -y libgomp1 git libnetcdf13 liblapack3 libfftw3-3
+RUN sudo apt install -y libgomp1 git libnetcdf19 liblapack3
 
 
 # all of this is needed by the C client, would be nice to remove it at some point
@@ -365,6 +365,7 @@ COPY polytope-deployment/common/default_fdb_schema /polytope/config/fdb/default
 
 # Copy python requirements
 COPY --chown=polytope --from=worker-base /root/.local /home/polytope/.local
+
 
 # Install the server source
 COPY --chown=polytope ./polytope-server/ /polytope/
