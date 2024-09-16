@@ -328,7 +328,7 @@ COPY --chown=polytope --from=mars-cpp-base-final    /root/.local /home/polytope/
 COPY --chown=polytope --from=mars-c-base-final     /opt/ecmwf/mars-client      /opt/ecmwf/mars-client
 COPY --chown=polytope --from=mars-c-base-final     /usr/local/bin/mars      /usr/local/bin/mars
 RUN sudo apt update
-RUN sudo apt install -y libgomp1 git libnetcdf19 liblapack3
+RUN sudo apt install -y libgomp1 git libnetcdf19 liblapack3  libfftw3-bin libproj25
 
 
 # all of this is needed by the C client, would be nice to remove it at some point
