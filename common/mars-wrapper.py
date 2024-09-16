@@ -31,9 +31,7 @@ port_file = "/persistent/last_mars_port"
 
 
 def main():
-    logging.basicConfig(
-        level=logging.DEBUG, format="%(asctime)s %(name)s %(levelname)s %(message)s"
-    )
+    logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(name)s %(levelname)s %(message)s")
 
     assert len(sys.argv) == 2
 
@@ -90,9 +88,7 @@ def main():
 
     # Call MARS
     mars_command = os.environ.get("ECMWF_MARS_COMMAND", "mars")
-    p = subprocess.Popen(
-        [mars_command, sys.argv[1]], cwd=os.path.dirname(__file__), shell=False, env=env
-    )
+    p = subprocess.Popen([mars_command, sys.argv[1]], cwd=os.path.dirname(__file__), shell=False, env=env)
     return p.wait()
 
 
