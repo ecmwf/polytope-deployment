@@ -31,7 +31,9 @@ port_file = "/persistent/last_mars_port"
 
 
 def main():
-    logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(name)s %(levelname)s %(message)s")
+    logging.basicConfig(
+        level=logging.DEBUG, format="%(asctime)s %(name)s %(levelname)s %(message)s"
+    )
 
     assert len(sys.argv) == 2
 
@@ -45,8 +47,16 @@ def main():
     pod_name = os.environ["K8S_POD_NAME"]  # = service name
     namespace = os.environ["K8S_NAMESPACE"]
 
-    service_url = f"https://{os.environ['KUBERNETES_SERVICE_HOST']}:{os.environ['KUBERNETES_PORT_443_TCP_PORT']}/api/v1/namespaces/{namespace}/services/{pod_name}"
-    response = requests.get(service_url, headers=headers, verify="/var/run/secrets/kubernetes.io/serviceaccount/ca.crt")
+    service_url = (
+        f"https://{os.environ['KUBERNETES_SERVICE_HOST']}:"
+        f"{os.environ['KUBERNETES_PORT_443_TCP_PORT']}/api/v1/namespaces/"
+        f"{namespace}/services/{pod_name}"
+    )
+    response = requests.get(
+        service_url,
+        headers=headers,
+        verify="/var/run/secrets/kubernetes.io/serviceaccount/ca.crt",
+    )
     response.raise_for_status()  # Raise an exception for HTTP errors
     service = response.json()["spec"]
 
@@ -80,7 +90,9 @@ def main():
 
     # Call MARS
     mars_command = os.environ.get("ECMWF_MARS_COMMAND", "mars")
-    p = subprocess.Popen([mars_command, sys.argv[1]], cwd=os.path.dirname(__file__), shell=False, env=env)
+    p = subprocess.Popen(
+        [mars_command, sys.argv[1]], cwd=os.path.dirname(__file__), shell=False, env=env
+    )
     return p.wait()
 
 
