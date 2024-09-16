@@ -277,18 +277,6 @@ COPY ./polytope-server/requirements.txt /requirements.txt
 RUN python -m pip install -r requirements.txt --user
 RUN python -m pip install geopandas --user
 
-# polytope feature extraction (from source)
-COPY --chown=polytope ./polytope /polytope-fe
-RUN python -m pip install /polytope-fe --user
-
-#covjsonkit (from source)
-COPY --chown=polytope ./covjsonkit /covjsonkit
-RUN python -m pip install /covjsonkit --user
-
-# polytope-mars source
-COPY --chown=polytope ./polytope-mars/ /polytope-mars
-RUN python -m pip install /polytope-mars --user
-
 #######################################################
 #                    W O R K E R
 #               based on debian bookworm
