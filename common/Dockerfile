@@ -135,60 +135,28 @@ RUN set -eux \
 #             G R I B  J U M P   B U I L D
 #######################################################
 
-FROM fdb-base AS gribjump-base
+FROM python:3.11-bookworm AS gribjump-base
+ARG mars_repo
 
-ARG ssh_prv_key
-ARG ssh_pub_key
+RUN response=$(curl -s -w "%{http_code}" ${mars_repo}) \
+    && if [ "$response" = "403" ]; then echo "Unauthorized access to ${mars_repo} "; fi
+
+RUN set -eux \
+    && apt-get update \
+    && apt-get install -y gnupg2 curl ca-certificates \
+    && curl -fsSL "${mars_repo}/private-raw-repos-config/debian/bookworm/stable/public.gpg.key" | gpg --dearmor -o /usr/share/keyrings/mars-archive-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/mars-archive-keyring.gpg] ${mars_repo}/private-debian-bookworm-stable/ bookworm main" | tee /etc/apt/sources.list.d/mars.list
+
+RUN set -eux \
+    && apt-get update \
+    && apt install -y gribjump-client=0.5.3-gribjump
 
 # gribjump not open source yet, clone it.
 RUN set -eux \
-    # Configure SSH for private repository access
-    && mkdir -p /root/.ssh \
-    && echo "$ssh_prv_key" > /root/.ssh/id_rsa \
-    && echo "$ssh_pub_key" > /root/.ssh/id_rsa.pub \
-    && chmod 600 /root/.ssh/id_rsa \
-    && chmod 600 /root/.ssh/id_rsa.pub \
-    && echo "StrictHostKeyChecking=no" > /root/.ssh/config \
-    && git clone --single-branch --branch develop ssh://git@github.com/ecmwf/gribjump.git \
-    && rm -rf /root/.ssh
-
-
-# Install fdb from local source (need a private version from internal ECMWF repository)
-COPY fdb5 /source/fdb
-RUN set -eux && \
-    mkdir -p build \
-    mkdir -p source \
-    mkdir -p /build/fdb && \
-    cd /build/fdb && \
-    ecbuild --prefix=/opt/fdb-gribjump -- -DCMAKE_PREFIX_PATH="/opt/fdb;/opt/fdb/eckit;/opt/fdb/metkit" /source/fdb && \
-    make -j4 && \
-    make install && \
-    rm -rf /build && \
-    rm -rf /source
-
-RUN set -eux && \
-    mkdir -p /source/libaec && \
-    curl -L https://gitlab.dkrz.de/k202009/libaec/uploads/3847727cd2e8c941f0d68f6822a73ed7/libaec-1.1.2.tar.gz| tar -xz -C /source/libaec --strip-components=1 && \
-    cd /source/libaec && \
-    mkdir -p ./build && \
-    cd ./build && \
-    ../configure --prefix=/opt/fdb-gribjump/libaec  && \
-    make -j4 && \
-    make install
-
-# Install gribjump \
-RUN set -eux && \
-    mkdir -p build \
-    mkdir -p /build/gribjump && \
-    cd /build/gribjump && \
-    ecbuild --prefix=/opt/fdb-gribjump -- -DCMAKE_PREFIX_PATH="/opt/fdb-gribjump;/opt/fdb-gribjump/libaec;/opt/fdb;/opt/fdb/eckit;/opt/fdb/metkit" /gribjump && \
-    make -j4 && \
-    make install && \
-    rm -rf /build
-
+    && git clone --single-branch --branch develop https://github.com/ecmwf/gribjump.git
 # Install pygribjump
 RUN set -eux \
-    && cd /gribjump \
+&& cd /gribjump \
     && python -m pip install . --user \
     && rm -rf /gribjump
 
@@ -202,7 +170,7 @@ ARG ssh_prv_key
 ARG ssh_pub_key
 
 # gribjump not open source yet, clone it.
-COPY fdbremote /source/fdbremote
+# COPY fdbremote /source/fdbremote
 # Install fdb from local source (need a private version from internal ECMWF repository)
 RUN apt-get install -y gfortran
 RUN set -eux \
@@ -242,7 +210,7 @@ RUN set -eux \
     && apt install -y libnetcdf19 liblapack3
 
 FROM mars-base AS mars-base-c
-RUN apt install -y liblapack3 mars-client mars-client-cloud
+RUN apt update && apt install -y liblapack3 mars-client=6.33.20.2 mars-client-cloud
 
 FROM mars-base AS mars-base-cpp
 RUN apt update && apt install -y mars-client-cpp=${mars_client_cpp_version}
@@ -345,11 +313,11 @@ COPY --chown=polytope --from=fdb-base-final /root/.local /home/polytope/.local
 # COPY --chown=polytope --from=fdb-remote-base /opt/fdbremote/ /opt/fdbremote/
 
 # Copy gribjump-related artifacts, including python libraries
-COPY --chown=polytope --from=gribjump-base-final /opt/fdb/ /opt/fdb/
-COPY --chown=polytope --from=gribjump-base-final /opt/fdb-gribjump/ /opt/fdb-gribjump/
+# COPY --chown=polytope --from=gribjump-base-final /opt/fdb/ /opt/fdb/
+# COPY --chown=polytope --from=gribjump-base-final /opt/fdb-gribjump/ /opt/fdb-gribjump/
 COPY --chown=polytope --from=gribjump-base-final /root/.local /home/polytope/.local
-RUN sudo apt install -y libopenjp2-7
-COPY polytope-deployment/common/default_fdb_schema /polytope/config/fdb/default
+# RUN sudo apt install -y libopenjp2-7
+# COPY polytope-deployment/common/default_fdb_schema /polytope/config/fdb/default
 
 # Copy python requirements
 COPY --chown=polytope --from=worker-base /root/.local /home/polytope/.local
