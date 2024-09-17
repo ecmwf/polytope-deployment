@@ -1,3 +1,4 @@
 *.swp
 **/build
 **.venv
+kubernetes/skaffold.env

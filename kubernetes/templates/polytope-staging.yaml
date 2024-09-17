@@ -43,10 +43,10 @@ spec:
       - name: polytope-staging-pod
         {{ if .Values.deployment.fqn_images }}
         image: {{ .Values.deployment.fqn_images.polytope_common }}
-        {{ else if .Values.deployment.build.tag }}
-        image: {{ .Values.deployment.build.registry }}/polytope-common:{{ .Values.deployment.build.tag }}
+        {{ else if .Values.deployment.tag }}
+        image: {{ .Values.deployment.registry }}/polytope-common:{{ .Values.deployment.tag }}
         {{ else }}
-        image: {{ .Values.deployment.build.registry }}/polytope-common:{{ .Release.Namespace }}-latest
+        image: {{ .Values.deployment.registry }}/polytope-common:{{ .Release.Namespace }}-latest
         {{ end }}
         imagePullPolicy: Always
         volumeMounts:

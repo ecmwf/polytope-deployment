@@ -41,7 +41,6 @@ deployment:
     mars_config_branch: 
 
   polytope_proxy:
-  efk_logstack: false
   public_endpoint_dns_name: none
   worker_node: 
   frontend_tls_secret: polytope-frontend-tls
@@ -84,11 +83,6 @@ deployment:
     port: 6379
     replicas: 0
 
-  polytope_staging:
-    host: stagingtwo
-    port: 9001
-    root_dir: /data
-    replicas: 0
 
   garbage-collector:
     host: garbage-collector
