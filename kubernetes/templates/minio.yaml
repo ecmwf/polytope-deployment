@@ -4,7 +4,7 @@
 #         D E P L O Y M E N T
 #########################################
 
-{{ if .Values.staging.s3 }}
+{{ if .Values.deployment.minio.enabled }}
 
 apiVersion: apps/v1
 kind: Deployment
@@ -38,9 +38,9 @@ spec:
         - /data
         env:
         - name: MINIO_ACCESS_KEY
-          value: {{ .Values.staging.s3.access_key }}
+          value: {{ .Values.deployment.minio.access_key }}
         - name: MINIO_SECRET_KEY
-          value: {{ .Values.staging.s3.secret_key }}
+          value: {{ .Values.deployment.minio.secret_key }}
         ports:
         - containerPort: 9000
         readinessProbe:

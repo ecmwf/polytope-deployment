@@ -1,0 +1,6 @@
+host: staging
+port: 9000
+size: 1Ti
+replicas: 1
+access_key: minio
+secret_key: minio123
