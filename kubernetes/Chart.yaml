@@ -31,3 +31,6 @@ dependencies:
     version: 3.67.0
     repository: https://seaweedfs.github.io/seaweedfs/helm
     condition: seaweedfs.enabled
+  - name: minio
+    version: 0.1.0
+    condition: minio.enabled
