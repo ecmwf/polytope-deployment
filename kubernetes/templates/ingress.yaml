@@ -87,7 +87,7 @@ spec:
       paths:
       - backend:
           service:
-            name: {{ .Values.deployment.ingress.downloads.host }}
+            name: "{{- if .Values.seaweedfs.enabled }}seaweedfs-s3{{- else }}{{ .Values.download_host }}{{- end }}"
             port:
               number: {{ .Values.deployment.ingress.downloads.port }}
         path: /
