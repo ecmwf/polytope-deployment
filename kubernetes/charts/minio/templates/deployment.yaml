@@ -30,9 +30,9 @@ spec:
         - /data
         env:
         - name: MINIO_ACCESS_KEY
-          value: {{ .Values.access_key }}
+          value: {{ .Values.s3_access_key }}
         - name: MINIO_SECRET_KEY
-          value: {{ .Values.secret_key }}
+          value: {{ .Values.s3_secret_key }}
         ports:
         - containerPort: {{ .Values.port }}
         readinessProbe:
