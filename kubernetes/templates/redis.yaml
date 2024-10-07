@@ -5,7 +5,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: redis-depl
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.global.namespace }}
 spec:
   replicas: {{ .Values.deployment.redis.replicas }}
   selector:
@@ -32,7 +32,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Values.deployment.redis.host }}
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.global.namespace }}
 spec:
   selector:
     app: redis

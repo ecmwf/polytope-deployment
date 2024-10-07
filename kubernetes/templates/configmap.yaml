@@ -22,7 +22,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: polytope-config
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.global.namespace }}
 data:
   config.yaml: |-
 {{- $config := .Values | deepCopy }}
