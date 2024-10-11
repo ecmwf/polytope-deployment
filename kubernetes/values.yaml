@@ -18,6 +18,9 @@
 ## does it submit to any jurisdiction.
 ##
 
+global:
+  namespace: my-namespace
+
 seaweedfs:
   enabled: false
 
@@ -28,21 +31,6 @@ minio:
   enabled: false
 
 deployment:
-  build:
-    no_proxy: 
-    proxy: 
-    registry: 
-    tag: $USER-latest
-    git_ssh_keys:
-        private: ~/.ssh/id_rsa
-        public: ~/.ssh/id_rsa.pub
-    install_fdb: true
-    install_mars: true
-    mars_repo: ""
-    fdb_repo: ""
-    mars_config_repo: 
-    mars_config_branch: 
-
   polytope_proxy:
   public_endpoint_dns_name: none
   worker_node: 
@@ -94,3 +82,17 @@ deployment:
 
   ingress:
     https_rewrite: true
+
+staging:
+    s3_boto3:
+      access_key: 
+      buffer_size: 40000000
+      host: 
+      max_threads: 10
+      port: 
+      secret_key: 
+      use_ssl: true
+
+testrunner:
+    host: testrunner
+    port: 5000
