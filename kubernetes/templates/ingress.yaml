@@ -82,7 +82,7 @@ metadata:
   name: polytope-ingress-downloads
 spec:
   rules:
-  - host: "download.{{ .Values.deployment.ingress.deployment_name }}.{{ .Values.deployment.ingress.common_domain }}"
+  - host: "download-{{ .Values.deployment.ingress.deployment_name }}.{{ .Values.deployment.ingress.common_domain }}"
     http:
       paths:
       - backend:
@@ -94,7 +94,7 @@ spec:
         pathType: Prefix
   tls:
   - hosts:
-    - "download.{{ .Values.deployment.ingress.deployment_name }}.{{ .Values.deployment.ingress.common_domain }}"
+    - "download-{{ .Values.deployment.ingress.deployment_name }}.{{ .Values.deployment.ingress.common_domain }}"
     secretName: {{ .Values.deployment.ingress.downloads.downloads_tls_secret }}
 
 {{ end }} # end of ingress enabled check defined in the beginning
