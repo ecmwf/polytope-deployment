@@ -24,6 +24,9 @@ seaweedfs:
 mysql:
   enabled: false
 
+minio:
+  enabled: false
+
 deployment:
   build:
     no_proxy: 
