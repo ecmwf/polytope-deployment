@@ -82,6 +82,16 @@ spec:
             mountPath: /logs/mars/statistics
           - name: tmp
             mountPath: /tmp
+          {{ if .Values.deployment.mars_c.enabled }}
+          - name: mars-ssh-key
+            mountPath: /home/polytope/.ssh/id_rsa.pub
+            subPath: "id_rsa.pub"
+            readOnly: true
+          - name: mars-ssh-key
+            mountPath: /home/polytope/.ssh/id_rsa
+            subPath: "id_rsa"
+            readOnly: true
+          {{ end }}
         command: ["python"]
         args: ["-m", "polytope_server.worker"]
       volumes:
@@ -94,6 +104,12 @@ spec:
           emptyDir: {}
         - name: tmp
           emptyDir: {}
+        {{ if .Values.deployment.mars_c.enabled }}
+        - name: mars-ssh-key
+          secret:
+            secretName: mars-ssh-secret
+            defaultMode: 0600
+        {{ end }}
       securityContext:
         fsGroup: 1500
       imagePullSecrets:
@@ -177,6 +193,16 @@ spec:
           #   mountPath: /data
           - name: worker-persistent
             mountPath: /persistent
+          {{ if .Values.deployment.mars_c.enabled }}
+          - name: mars-ssh-key
+            mountPath: /home/polytope/.ssh/id_rsa.pub
+            subPath: "id_rsa.pub"
+            readOnly: true
+          - name: mars-ssh-key
+            mountPath: /home/polytope/.ssh/id_rsa
+            subPath: "id_rsa"
+            readOnly: true
+          {{ end }}
         command: ["python"]
         args: ["-m", "polytope_server.worker"]
       volumes:
@@ -189,6 +215,12 @@ spec:
           emptyDir: {}
         - name: tmp
           emptyDir: {}
+        {{ if .Values.deployment.mars_c.enabled }}
+        - name: mars-ssh-key
+          secret:
+            secretName: mars-ssh-secret
+            defaultMode: 0600
+        {{ end }}
         # - name: fdb
         #   persistentVolumeClaim:
         #     claimName: worker-pv-claim
