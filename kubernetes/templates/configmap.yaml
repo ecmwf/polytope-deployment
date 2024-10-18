@@ -28,7 +28,7 @@ data:
 {{- $config := .Values | deepCopy }}
 {{- if .Values.seaweedfs.enabled }}
   {{- if hasKey .Values.staging "s3_boto3" }}
-    {{- $_ := set $config.staging.s3_boto3 "host" "seaweedfs-s3" }}
+    {{- $_ := set $config.staging.s3_boto3 "host" "http://seaweedfs-s3" }}
     {{- $_ := set $config.staging.s3_boto3 "should_set_policy" false }}
   {{- end }}
 {{- else }}
@@ -39,7 +39,7 @@ data:
 
 {{- if .Values.seaweedfs.enabled }}
   {{- if hasKey .Values.staging "s3" }}
-    {{- $_ := set $config.staging.s3 "host" "seaweedfs-s3" }}
+    {{- $_ := set $config.staging.s3 "host" "http://seaweedfs-s3" }}
     {{- $_ := set $config.staging.s3 "should_set_policy" false }}
   {{- end }}
 {{- else }}
