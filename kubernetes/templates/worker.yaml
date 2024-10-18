@@ -274,7 +274,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: worker-{{ $i }}
-  namespace: {{ .Values.global.namespace }}
+  namespace: {{ $.Values.global.namespace }}
 spec:
   externalTrafficPolicy: Local # Only visible when accessing host node
   selector:
