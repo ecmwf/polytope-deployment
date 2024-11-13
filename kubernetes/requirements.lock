@@ -1,9 +1,0 @@
-dependencies:
-- name: mysql
-  repository: https://charts.bitnami.com/bitnami
-  version: 10.2.2
-- name: seaweedfs
-  repository: https://seaweedfs.github.io/seaweedfs/helm
-  version: 3.67.0
-digest: sha256:4a9c2af66829e7f93996f33b7f709baed02fdb88194441703fe64330d45c47a1
-generated: "2024-09-17T22:03:26.325054364Z"
