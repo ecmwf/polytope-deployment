@@ -1,3 +1,5 @@
+[![Static Badge](https://github.com/ecmwf/codex/raw/refs/heads/main/Project%20Maturity/archived_badge.svg)](https://github.com/ecmwf/codex/raw/refs/heads/main/Project%20Maturity)
+
 # polytope-deployment
 
 THIS REPOSITORY IS NOT ACTIVELY BEING UPDATED. PLease see our [helm chart repo](https://github.com/ecmwf/polytope-chart)
